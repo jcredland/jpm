@@ -12,20 +12,10 @@
 #define MODULE_H_INCLUDED
 
 #include "../JuceLibraryCode/JuceHeader.h"
+#include "DownloadCache.h"
+#include "Source_GitHub.h"
 
 
-class DownloadedModuleCache
-{
-public:
-	DownloadedModuleCache()
-	{
-		location = File::getSpecialLocation(File::userApplicationDataDirectory).getChildFile("jpm.modulecache");
-	}
-
-
-
-	File location;
-};
 
 /** Refers to a module. */
 class Module
@@ -45,49 +35,40 @@ public:
 
 	bool isValid() const { return getName().isNotEmpty(); }
 
-	void downloadFromGitHub(const File & tempFolder)
+	String getSummaryString() const
 	{
-		std::cout << "Downloading" << std::endl;
-
-		MemoryBlock memoryBlock;
-		URL url(getPath() + getVersion() + ".zip");
-
-		if (!url.readEntireBinaryStream(memoryBlock, false))
-		{
-			std::cout << "error: downloading " + getName() << std::endl;
-			return;
-		}
-
-		MemoryInputStream inputStream(memoryBlock, false);
-
-
-		std::cout << "Uncompressing to " << tempFolder.getFullPathName() << std::endl;
-		ZipFile zip(inputStream);
-		auto result = zip.uncompressTo(tempFolder, true); 
-
-		if (result.failed())
-			std::cout << result.getErrorMessage() << std::endl;	
+		return getRepo() + "/" + getName() + "@" + getVersion(); 
 	}
+
 
 	/** Install this module into a destination folder. */
 	void install(const File & destinationFolder)
 	{
-		File tempFolder = File::createTempFile(".jpm");
+		File file;
 
 		if (getSource() == "GitHub")
-			downloadFromGitHub(tempFolder);
+		{
+			GitHubSource github; 
+			auto result = github.download(getPath(), getVersion(), getSubPath());
+
+			if (! result.success)
+				return;
+
+			file = result.file;
+			setVersion(result.actualVersionNumber); 
+		}
 		else
+		{
 			std::cerr << "Invalid source " + getSource() << std::endl;
+		}
 
-		auto sourceFile = tempFolder.getChildFile(getSubPath());
-
-		if (! sourceFile.exists())
+		if (! file.exists())
 		{
 			std::cerr << "Invalid module" << std::endl;
 			return;
 		}
 
-		auto result = sourceFile.copyDirectoryTo(destinationFolder.getChildFile(getName()));
+		auto result = file.copyDirectoryTo(destinationFolder.getChildFile(getName()));
 
 		if (!result)
 		{
@@ -126,7 +107,12 @@ public:
 	void setSubPath(const String& subpath) {
 		state.setProperty("subpath", subpath, nullptr);
 	}
-
+	String getRepo() const {
+		return state["repo"];
+	}
+	void setRepo(const String& repo) {
+		state.setProperty("repo", repo, nullptr);
+	}
 private:
 	static StringArray & getValidSources() 
 	{

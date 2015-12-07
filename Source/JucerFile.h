@@ -66,6 +66,11 @@ public:
 		return true;
     }
 
+	void save()
+	{
+		file.replaceWithText(jucer.toXmlString());
+	}
+
 	ValueTree getAllModules()
 	{
 		return jucer.getChildWithName("MODULES"); 
@@ -90,7 +95,6 @@ public:
 
 		for (int i = 0; i < exportFormats.getNumChildren(); ++i)
 		{
-			std::cout << "found exporter: " << exportFormats.getChild(i).getType().toString() << std::endl; 
 			auto modules = exportFormats.getChild(i).getChildWithName("MODULEPATHS"); 
 			results.add(modules); 
 		}
