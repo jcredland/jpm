@@ -27,6 +27,20 @@ namespace ModuleIds
 };
 #undef ID
 
+/** 
+ We need to provide custom headers to github to use this beta service. 
+ */
+String readEntireTextStreamCustomHeaders (URL url)
+{
+    String headers = "Accept: application/vnd.github.drax-preview+json";
+    const ScopedPointer<InputStream> in (url.createInputStream (false, nullptr, nullptr, headers));
+
+    if (in != nullptr)
+        return in->readEntireStreamAsString();
+
+    return String();
+}
+
 /**
  The user will want to do something like:
    jpm genmodule <folder_name> <namespace>
@@ -117,8 +131,6 @@ public:
         u += "\n";
         u += "This generator won't cope with any hugely complicated situations!";
         u += "\n";
-        u += "When it's finished this will plugin into the github license API";
-        u += "\n";
         
         std::cerr << u << std::endl;
     }
@@ -187,10 +199,23 @@ public:
         }
         t += "\n";
     }
+    
+    void appendLicenseComment(String & t)
+    {
+        t += "\n";
+        t += "/*";
+        t += "\n";
+        t += getLicenseText("mit");
+        t += "\n";
+        t += "*/";
+        t += "\n";
+        t += "\n";
+    }
         
     String getHeader()
     {
         String t;
+        appendLicenseComment(t);
         appendHeaderGuard(t);
         appendDependencies(t);
         appendNamespaceStart(t);
@@ -228,6 +253,16 @@ public:
         StringArray includes(folder.getFileName() + ".cpp"); 
         appendIncludes(t, includes);
         return t;
+    }
+    
+    
+    String getLicenseText(const String & licenseCode)
+    {
+        printInfo("retrieving license from github - currently set to MIT license");
+        URL url("https://api.github.com/licenses/" + licenseCode);
+        auto text = readEntireTextStreamCustomHeaders(url);
+        var response = JSON::fromString(text);
+        return response["body"];
     }
     
 private:
