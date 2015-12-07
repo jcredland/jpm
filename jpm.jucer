@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<JUCERPROJECT id="VeoNiQ" name="jpm" projectType="consoleapp" version="1.0.0"
+              bundleIdentifier="com.yourcompany.jpm" includeBinaryInAppConfig="1"
+              jucerVersion="3.2.0">
+  <MAINGROUP id="lKnX28" name="jpm">
+    <GROUP id="{B94692A7-5AFA-84B6-3ED4-855A7936E9F0}" name="Source">
+      <FILE id="EHqcvH" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
+    </GROUP>
+  </MAINGROUP>
+  <EXPORTFORMATS>
+    <XCODE_MAC targetFolder="Builds/MacOSX">
+      <CONFIGURATIONS>
+        <CONFIGURATION name="Debug" osxSDK="default" osxCompatibility="default" osxArchitecture="default"
+                       isDebug="1" optimisation="1" targetName="jpm"/>
+        <CONFIGURATION name="Release" osxSDK="default" osxCompatibility="default" osxArchitecture="default"
+                       isDebug="0" optimisation="3" targetName="jpm"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_core" path="../big-kick/corelib/juce.patched/modules"/>
+        <MODULEPATH id="juce_events" path="../big-kick/corelib/juce.patched/modules"/>
+        <MODULEPATH id="juce_graphics" path="../big-kick/corelib/juce.patched/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../big-kick/corelib/juce.patched/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../big-kick/corelib/juce.patched/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../big-kick/corelib/juce.patched/modules"/>
+        <MODULEPATH id="juce_cryptography" path="../big-kick/corelib/juce.patched/modules"/>
+        <MODULEPATH id="juce_video" path="../big-kick/corelib/juce.patched/modules"/>
+        <MODULEPATH id="juce_opengl" path="../big-kick/corelib/juce.patched/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../big-kick/corelib/juce.patched/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../big-kick/corelib/juce.patched/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../big-kick/corelib/juce.patched/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../big-kick/corelib/juce.patched/modules"/>
+      </MODULEPATHS>
+    </XCODE_MAC>
+  </EXPORTFORMATS>
+  <MODULES>
+    <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_core" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_cryptography" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_events" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_opengl" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_video" showAllCode="1" useLocalCopy="0"/>
+  </MODULES>
+  <JUCEOPTIONS/>
+</JUCERPROJECT>
