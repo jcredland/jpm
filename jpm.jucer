@@ -2,18 +2,22 @@
 
 <JUCERPROJECT id="VeoNiQ" name="jpm" projectType="consoleapp" version="1.0.0"
               bundleIdentifier="com.yourcompany.jpm" includeBinaryInAppConfig="1"
-              jucerVersion="3.2.0">
+              jucerVersion="4.0.2">
   <MAINGROUP id="lKnX28" name="jpm">
     <GROUP id="{B94692A7-5AFA-84B6-3ED4-855A7936E9F0}" name="Source">
-      <FILE id="hyZ4yU" name="Source_GitHub.h" compile="0" resource="0" file="Source/Source_GitHub.h"/>
       <FILE id="LtFqOC" name="ConfigFile.h" compile="0" resource="0" file="Source/ConfigFile.h"/>
-      <FILE id="HSdcxm" name="DownloadCache.h" compile="0" resource="0" file="Source/DownloadCache.h"/>
       <FILE id="YYUaVX" name="Directory.h" compile="0" resource="0" file="Source/Directory.h"/>
-      <FILE id="k2Ltte" name="Module.h" compile="0" resource="0" file="Source/Module.h"/>
-      <FILE id="YMOVr5" name="ValueTreeArray.h" compile="0" resource="0"
-            file="Source/ValueTreeArray.h"/>
+      <FILE id="HSdcxm" name="DownloadCache.h" compile="0" resource="0" file="Source/DownloadCache.h"/>
       <FILE id="GjXqK2" name="JucerFile.h" compile="0" resource="0" file="Source/JucerFile.h"/>
       <FILE id="EHqcvH" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
+      <FILE id="k2Ltte" name="Module.h" compile="0" resource="0" file="Source/Module.h"/>
+      <FILE id="IbzvOp" name="ModuleGenerator.h" compile="0" resource="0"
+            file="Source/ModuleGenerator.h"/>
+      <FILE id="hyZ4yU" name="Source_GitHub.h" compile="0" resource="0" file="Source/Source_GitHub.h"/>
+      <FILE id="DYIcUc" name="Source_Local.h" compile="0" resource="0" file="Source/Source_Local.h"/>
+      <FILE id="YcDxND" name="Utilities.h" compile="0" resource="0" file="Source/Utilities.h"/>
+      <FILE id="YMOVr5" name="ValueTreeArray.h" compile="0" resource="0"
+            file="Source/ValueTreeArray.h"/>
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
@@ -53,4 +57,7 @@
     <MODULE id="juce_events" showAllCode="1" useLocalCopy="0"/>
   </MODULES>
   <JUCEOPTIONS/>
+  <LIVE_SETTINGS>
+    <OSX enableCxx11="1"/>
+  </LIVE_SETTINGS>
 </JUCERPROJECT>

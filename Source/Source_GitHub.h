@@ -12,6 +12,7 @@
 #define SOURCE_GITHUB_H_INCLUDED
 
 #include "../JuceLibraryCode/JuceHeader.h"
+#include "Utilities.h"
 #include <iostream>
 
 class Source 
@@ -43,21 +44,27 @@ class GitHubSource
 	public Source
 {
 public:
-	DownloadInfo download(const String & path, const String & version, const String & subpath)
+	DownloadInfo download(const String & path, String version, const String & subpath)
 	{
+        if (version.isEmpty())
+        {
+            version = "master";
+            printWarning("no version selected, using tip of master branch");
+        }
+        
 		DownloadInfo downloadInfo;
 
-		std::cout << "downloading: " << path << std::endl;
+		printInfo("downloading: " + path);
 
 		URL url("https://www.github.com/" + trimSlashes(path) + "/archive/" + version + ".zip");
-		std::cout << "url: " << url.toString(true) << std::endl;
+		printInfo("url: " + url.toString(true));
 
 		DownloadCache cache;
 		auto file = cache.downloadUrlAndUncompress(url);
 
 		if (file == File::nonexistent)
 		{
-			std::cerr << "Could not obtain file" << std::endl;
+			printError("Could not obtain file");
 			return downloadInfo;
 		}
 
@@ -65,14 +72,14 @@ public:
 		file.findChildFiles(subFolders, File::findDirectories, false, "*"); 
 
 		if (subFolders.size() != 1)
-			std::cerr << "warning: download cache contains mutiple subfolders.  either github have change their api or you should clear your cache" << std::endl;
+			printError("warning: download cache contains mutiple subfolders.  either github have change their api or you should clear your cache");
 
-		downloadInfo.file = file.getChildFile(subFolders[0].getFileName()).getChildFile(subpath); 
+		downloadInfo.file = file.getChildFile(subFolders[0].getFileName()).getChildFile(trimSlashes(subpath)); 
 
 		if (downloadInfo.file.exists())
 			downloadInfo.success = true;
 		else
-			std::cerr << "error: could not find subpath" << std::endl;
+			printError("error: could not find subpath");
 
 		if (version == "master")
 			downloadInfo.actualVersionNumber = getMasterGitCommitReference(path);
@@ -87,11 +94,10 @@ public:
 		URL url("https://api.github.com/repos/" + trimSlashes(path) + "/commits/master"); 
 
 		auto data = url.readEntireTextStream(false);
-		std::cout << url.toString(true) << std::endl;
 		auto json = JSON::fromString(data); 
 		auto sha1 = json.getProperty("sha", String::empty).toString(); 
 
-		std::cout << "got master commit at " << sha1 << std::endl;
+		printInfo("got master commit at " + sha1);
 
 		return sha1;
 	}

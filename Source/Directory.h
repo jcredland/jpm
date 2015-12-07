@@ -61,13 +61,13 @@ class Directory
 {
 public:
 	/**
-	Directory URL file has the following format: 
+	Directory URL file has the following format for GitHub:
 	
-	<repo shortname="juce" path="https://github.com/julianstorer/JUCE/archive/" source="GitHub">
-		<module name="juce_core" description="Some helpful information about the module">
-			<version version="3.1.1" subpath="JUCE-3.1.1/modules/juce_core"/>
-			<version version="4.1.1" subpath="JUCE-4.1.1/modules/juce_core"/>
-		</module>
+	<repo shortname="juce" path="/julianstorer/JUCE/" source="GitHub">
+		<module 
+            name="juce_core"
+            description="Some helpful information about the module" 
+            subpath="modules/juce_core"/>
 	</source>
 
 	repo - used to differentiate different hosts for the same code
@@ -147,11 +147,16 @@ private:
 				};
 
 				Module m;
+                
 				m.setRepo(test(repoEntry["shortname"]));
 				m.setPath(test(repoEntry["path"]));
 				m.setSource(test(repoEntry["source"]));
 				m.setName(test(moduleEntry["name"]));
 				m.setSubPath(test(moduleEntry["subpath"]));
+                
+                /* Description is allowed to be empty. */
+				m.setDescription(moduleEntry["description"]);
+                
 				result.add(m);
 			}
 		}

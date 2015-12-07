@@ -16,6 +16,7 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include <iostream>
 #include "JucerFile.h"
+#include "ModuleGenerator.h"
 #include "Module.h"
 #include "Directory.h"
 #include "ConfigFile.h"
@@ -26,11 +27,10 @@ public:
 	App(StringArray commandLine_)
 		:
 		config(File::getCurrentWorkingDirectory().getChildFile("jpmfile.xml")),
-		commandLine(commandLine_),
-		directory(URL("http://www.credland.net/jpm_directory.xml"))
+		directory(URL("http://www.credland.net/jpm_directory.xml")),
+		commandLine(commandLine_)
 	{
 		jucer.setFile(File::getCurrentWorkingDirectory());
-		jucer.clearModules();
 	}
 
 	~App()
@@ -38,20 +38,33 @@ public:
 		jucer.save();
 	}
 
+
+	void run()
+	{
+		String command = commandLine[1];
+		commandLine.removeRange(0, 2); 
+
+		if (command == "list")
+			list();
+        else if (command == "install")
+			install();
+        else if (command == "genmodule")
+			genmodule();
+        else if (command == "rebuildjucer")
+			rebuildJucerModuleList();
+        else if (command == "erasecache")
+			DownloadCache().clearCache();
+        else if (command == "add")
+            add();
+        else
+            printError("command not found"); 
+	}
+
+private:
 	/** Add a modules to the jpmfile.xml and install it. */
-	void addAndInstallModule(const String & moduleName)
+	void addModuleFromDirectory(const String & moduleName)
 	{
 		auto modules = directory.getModulesByName(moduleName);
-
-		if (modules.size() > 1)
-		{
-			std::cerr << "Multiple modules were discovered.  Please select one using the repo/name@version format" << std::endl;
-
-			for (auto m: modules)
-				std::cerr << m.getSummaryString() << std::endl;
-
-			return;
-		}
 
 		if (modules.size() == 0)
 		{
@@ -59,23 +72,55 @@ public:
 			return;
 		}
 
-		auto module = modules[0];
+		if (modules.size() > 1)
+            std::cout << "Installing multiple modules" << std::endl;
 
-		if (module.isValid())
-		{
-			module.install(File::getCurrentWorkingDirectory().getChildFile("jpm_modules"));
-			config.addModule(module);
-			rebuildJucerModuleList();
-		}
+        for (auto module: modules)
+        {
+            std::cout << module.getSummaryString() << std::endl;
+            
+    		if (module.isValid())
+    		{
+                module.install(File::getCurrentWorkingDirectory().getChildFile("jpm_modules"));
+                config.addModule(module);
+    		}
+        }
+        
+        rebuildJucerModuleList();
 	}
+
+
+    void addLocalModule(const String & userSuppliedPath)
+    {
+        File folder(File::getCurrentWorkingDirectory().getChildFile(userSuppliedPath)); 
+
+        Module m;
+        m.setSource("LocalPath"); 
+        m.setName(folder.getFileNameWithoutExtension());
+        m.setVersion("NA"); 
+        m.setPath(userSuppliedPath); 
+        config.addModule(m);
+
+        rebuildJucerModuleList();
+    }
+
+    void addModuleToJucer(Module module)
+    {
+        if (module.getSource() == "LocalPath")
+            jucer.addModule(module.getName(), module.getPath()); 
+        else
+            jucer.addModule(module.getName());
+    }
 
 	/** Update the jucer file with the latest list of modules. */
 	void rebuildJucerModuleList()
 	{
+		jucer.clearModules();
+
 		auto allModules = config.getModules();
 
 		for (auto m : allModules)
-			jucer.addModule(m.getName());
+			addModuleToJucer(m);
 	}
 
 	/** Installs any modules that are missing from the jpm_modules folder. */
@@ -96,6 +141,7 @@ public:
 		}
 	}
 
+    
 	void install()
 	{
 		std::cout << "install..." << std::endl;
@@ -108,11 +154,17 @@ public:
 		{
 			while (commandLine.size() > 0)
 			{
-				addAndInstallModule(commandLine[0]);
+				addModuleFromDirectory(commandLine[0]);
 				commandLine.remove(0);
 			}
 		}
 	}
+    
+    void genmodule()
+    {
+        ModuleGenerator generator;
+        generator.run(commandLine);
+    }
 
 	void list()
 	{
@@ -129,22 +181,14 @@ public:
 			std::cout << r.getSummaryString() << std::endl;
 	}
 
-	void run()
-	{
-		String command = commandLine[1];
-		commandLine.removeRange(0, 2); 
+    void add()
+    {
+        if (commandLine.size() == 0)
+            printError("You need to specify a folder with a module in it"); 
+        else
+            addLocalModule(commandLine[0]);
+    }
 
-		if (command == "list")
-			list();
-
-		if (command == "install")
-			install();
-
-		if (command == "erasecache")
-			DownloadCache().clearCache();
-	}
-
-private:
 	ConfigFile config;
 	JucerFile jucer;	
 	Directory directory;
@@ -158,11 +202,16 @@ void usage()
     std::cout << std::endl;
     std::cout << "jpm - a juce package manager" << std::endl;
     std::cout << std::endl;
+    std::cout << "ESSENTIAL COMMANDS" << std::endl;
     std::cout << "jpm install <source>      add and install a modules" << std::endl;
     std::cout << "jpm install               download any missing modules for the current project" << std::endl;
-    std::cout << "jpm genmodule <name>      create a module template [ not yet implemented ]" << std::endl;
+    std::cout << "jpm add <source>          add a local module without using the directory" << std::endl;
     std::cout << "jpm list [<wildcard>]     show all available modules, e.g. jpm list *core*" << std::endl;
     std::cout << "jpm erasecache            erase the download cache" << std::endl;
+    std::cout << std::endl;
+    std::cout << "OTHER COMMANDS" << std::endl;
+    std::cout << "jpm genmodule <name>      create a module template [ not yet implemented ]" << std::endl;
+    std::cout << "jpm rebuildjucer          rewrite the modules section of the jucer file" << std::endl;
     std::cout << std::endl;
     std::cout << "Run this from the root of your JUCE project" << std::endl;
 }

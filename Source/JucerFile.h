@@ -62,7 +62,6 @@ public:
 		}
 
 		jucer = ValueTree::fromXml(*xml);
-		listModules();
 		return true;
     }
 
@@ -104,18 +103,19 @@ public:
 
 	/** 
 	Here we assume we are going to have copies under jpm_modules and that therefore all the
-	module paths will be the same for all plaforms. */
-	void addModule(const String & moduleName)
+	module paths will be the same for all plaforms. EXCEPT - where we are using a LocalPath
+    source. */
+	void addModule(const String & moduleName, const String & modulePath = "./jmp_modules")
     {
 		{
-			ValueTree modulePath("MODULEPATH");
-			modulePath.setProperty("id", moduleName, nullptr);
-			modulePath.setProperty("path", "./jpm_modules", nullptr);
+			ValueTree modulePathTree("MODULEPATH");
+			modulePathTree.setProperty("id", moduleName, nullptr);
+			modulePathTree.setProperty("path", modulePath, nullptr);
 
 			auto exporterModules = getAllExporterModules();
 			for (auto k: exporterModules)
 			{
-				ValueTree t = modulePath.createCopy();
+				ValueTree t = modulePathTree.createCopy();
 				k.addChild(t, -1, nullptr); 
 			}
 		}

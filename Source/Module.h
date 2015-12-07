@@ -15,8 +15,6 @@
 #include "DownloadCache.h"
 #include "Source_GitHub.h"
 
-
-
 /** Refers to a module. */
 class Module
 {
@@ -35,11 +33,12 @@ public:
 
 	bool isValid() const { return getName().isNotEmpty(); }
 
+    /** Return a one line view that'll be used for 'jpm list' */
 	String getSummaryString() const
 	{
-		return getRepo() + "/" + getName() + "@" + getVersion(); 
+        String name = getRepo() + "/" + getName();
+        return name.paddedRight(' ', 40) + getDescription();
 	}
-
 
 	/** Install this module into a destination folder. */
 	void install(const File & destinationFolder)
@@ -57,6 +56,10 @@ public:
 			file = result.file;
 			setVersion(result.actualVersionNumber); 
 		}
+        else if (getSource() == "Local")
+        {
+            
+        }
 		else
 		{
 			std::cerr << "Invalid source " + getSource() << std::endl;
@@ -82,6 +85,12 @@ public:
 	}
 	void setName(const String& name) {
 		state.setProperty("name", name, nullptr);
+	}
+	String getDescription() const {
+		return state["description"];
+	}
+	void setDescription(const String& description) {
+		state.setProperty("description", description, nullptr);
 	}
 	String getVersion() const {
 		return state["version"];
@@ -118,12 +127,12 @@ private:
 	{
 		static StringArray validSources;
 		validSources.add("GitHub"); 
+		validSources.add("LocalPath"); 
 		return validSources;
 	}
 
 	ValueTree state;
 };
-
 
 
 
