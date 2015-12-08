@@ -1,4 +1,4 @@
-/* 
+/*
 	This program is free software : you can redistribute it and / or modify
 	it under the terms of the GNU General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
@@ -24,178 +24,181 @@
 class App
 {
 public:
-	App(StringArray commandLine_)
-		:
-		config(File::getCurrentWorkingDirectory().getChildFile("jpmfile.xml")),
-		directory(URL("http://www.credland.net/jpm_directory.xml")),
-		commandLine(commandLine_)
-	{
-		jucer.setFile(File::getCurrentWorkingDirectory());
-	}
+    App (StringArray commandLine_)
+        :
+        config (File::getCurrentWorkingDirectory().getChildFile ("jpmfile.xml")),
+        commandLine (commandLine_)
+    {
+        jucer.setFile (File::getCurrentWorkingDirectory());
+    }
 
-	~App()
-	{
-		jucer.save();
-	}
+    ~App()
+    {
+        jucer.save();
+    }
 
 
-	void run()
-	{
-		String command = commandLine[1];
-		commandLine.removeRange(0, 2); 
+    void run()
+    {
+        printInfo ("juce package manager");
+        String command = commandLine[1];
+        commandLine.removeRange (0, 2);
 
-		if (command == "list")
-			list();
+        if (command == "list")
+            list();
         else if (command == "install")
-			install();
+            install();
         else if (command == "genmodule")
-			genmodule();
+            genmodule();
         else if (command == "rebuildjucer")
-			rebuildJucerModuleList();
+            rebuildJucerModuleList();
         else if (command == "erasecache")
-			DownloadCache().clearCache();
+            DownloadCache().clearCache();
         else if (command == "add")
             add();
         else
-            printError("command not found"); 
-	}
+            printError ("command not found");
+    }
 
 private:
-	/** Add a modules to the jpmfile.xml and install it. */
-	void addModuleFromDirectory(const String & moduleName)
-	{
-		auto modules = directory.getModulesByName(moduleName);
-
-		if (modules.size() == 0)
-		{
-			std::cerr << "error: module " << moduleName << " not found" << std::endl;
-			return;
-		}
-
-		if (modules.size() > 1)
-            std::cout << "Installing multiple modules" << std::endl;
-
-        for (auto module: modules)
-        {
-            std::cout << module.getSummaryString() << std::endl;
-            
-    		if (module.isValid())
-    		{
-                module.install(File::getCurrentWorkingDirectory().getChildFile("jpm_modules"));
-                config.addModule(module);
-    		}
-        }
-        
-        rebuildJucerModuleList();
-	}
-
-
-    void addLocalModule(const String & userSuppliedPath)
+    /** Add a modules to the jpmfile.xml and install it. */
+    void addModuleFromDirectory (const String& moduleName)
     {
-        File folder(File::getCurrentWorkingDirectory().getChildFile(userSuppliedPath)); 
+        Directory directory (directoryUrl);
+        auto modules = directory.getModulesByName (moduleName);
+
+        if (modules.size() == 0)
+        {
+            std::cerr << "error: module " << moduleName << " not found" << std::endl;
+            return;
+        }
+
+        if (modules.size() > 1)
+            printWarning ("installing " + String (modules.size()) + " modules");
+
+        for (auto module : modules)
+        {
+            printWarning ("installing: " + module.getRepo() + "/" + module.getName() + "@" + module.getVersion());
+
+            if (module.isValid())
+            {
+                module.install (File::getCurrentWorkingDirectory().getChildFile ("jpm_modules"));
+                config.addModule (module);
+            }
+        }
+
+        rebuildJucerModuleList();
+    }
+
+
+    void addLocalModule (const String& userSuppliedPath)
+    {
+        File folder (File::getCurrentWorkingDirectory().getChildFile (userSuppliedPath));
 
         Module m;
-        m.setSource("LocalPath"); 
-        m.setName(folder.getFileNameWithoutExtension());
-        m.setVersion("NA"); 
+        m.setSource ("LocalPath");
+        m.setName (folder.getFileNameWithoutExtension());
+        m.setVersion ("NA");
         /* A path provided by the user is made relative to the project, and without the module
          * folder itself being included to avoid confusing the introjucer. */
-        m.setPath(folder.getParentDirectory().getRelativePathFrom(File::getCurrentWorkingDirectory())); 
-        config.addModule(m);
+        m.setPath (folder.getParentDirectory().getRelativePathFrom (File::getCurrentWorkingDirectory()));
+        config.addModule (m);
 
         rebuildJucerModuleList();
     }
 
-    void addModuleToJucer(Module module)
+    void addModuleToJucer (Module module)
     {
         if (module.getSource() == "LocalPath")
-            jucer.addModule(module.getName(), module.getPath()); 
+            jucer.addModule (module.getName(), module.getPath());
         else
-            jucer.addModule(module.getName());
+            jucer.addModule (module.getName());
     }
 
-	/** Update the jucer file with the latest list of modules. */
-	void rebuildJucerModuleList()
-	{
-		jucer.clearModules();
+    /** Update the jucer file with the latest list of modules. */
+    void rebuildJucerModuleList()
+    {
+        jucer.clearModules();
 
-		auto allModules = config.getModules();
+        auto allModules = config.getModules();
 
-		for (auto m : allModules)
-			addModuleToJucer(m);
-	}
+        for (auto m : allModules)
+            addModuleToJucer (m);
+    }
 
-	/** Installs any modules that are missing from the jpm_modules folder. */
-	void installMissingModules()
-	{
-		auto allModules = config.getModules();
+    /** Installs any modules that are missing from the jpm_modules folder. */
+    void installMissingModules()
+    {
+        auto allModules = config.getModules();
 
-		for (auto module : allModules)
-		{
-			auto jpmModulesFolder = File::getCurrentWorkingDirectory().getChildFile("jpm_modules");
-			auto name = module.getName(); 
+        for (auto module : allModules)
+        {
+            auto jpmModulesFolder = File::getCurrentWorkingDirectory().getChildFile ("jpm_modules");
+            auto name = module.getName();
 
-			if (!jpmModulesFolder.getChildFile(name).exists())
-			{
-				std::cout << "installing: " << name << std::endl;
-				module.install(jpmModulesFolder);
-			}
-		}
-	}
+            if (!jpmModulesFolder.getChildFile (name).exists())
+            {
+                std::cout << "installing: " << name << std::endl;
+                module.install (jpmModulesFolder);
+            }
+        }
+    }
 
-    
-	void install()
-	{
-		std::cout << "install..." << std::endl;
-		if (commandLine.size() == 0)
-		{
-			std::cerr << "installing missing modules (to force a refresh delete the jpm_modules folder first)" << std::endl;
-			installMissingModules();
-		}
-		else
-		{
-			while (commandLine.size() > 0)
-			{
-				addModuleFromDirectory(commandLine[0]);
-				commandLine.remove(0);
-			}
-		}
-	}
-    
+
+    void install()
+    {
+        if (commandLine.size() == 0)
+        {
+            printInfo ("installing missing modules");
+            printInfo ("to force a refresh delete the jpm_modules folder first)");
+            installMissingModules();
+        }
+        else
+        {
+            while (commandLine.size() > 0)
+            {
+                addModuleFromDirectory (commandLine[0]);
+                commandLine.remove (0);
+            }
+        }
+    }
+
     void genmodule()
     {
         ModuleGenerator generator;
-        generator.run(commandLine);
+        generator.run (commandLine);
     }
 
-	void list()
-	{
-		String searchString;
+    void list()
+    {
+        Directory directory (directoryUrl);
+        String searchString;
 
-		if (commandLine.size() == 0)
-			searchString = "*";
-		else
-			searchString = commandLine[0];
+        if (commandLine.size() == 0)
+            searchString = "*";
+        else
+            searchString = commandLine[0];
 
-		auto result = directory.getModulesByName(searchString); 
+        auto result = directory.getModulesByName (searchString);
 
-		for (auto r: result)
-			std::cout << r.getSummaryString() << std::endl;
-	}
+        for (auto r : result)
+            std::cout << r.getSummaryString() << std::endl;
+    }
 
     void add()
     {
         if (commandLine.size() == 0)
-            printError("You need to specify a folder with a module in it"); 
+            printError ("You need to specify a folder with a module in it");
         else
-            addLocalModule(commandLine[0]);
+            addLocalModule (commandLine[0]);
     }
 
-	ConfigFile config;
-	JucerFile jucer;	
-	Directory directory;
+    ConfigFile config;
+    JucerFile jucer;
 
-	StringArray commandLine;
+    URL directoryUrl { URL ("http://www.credland.net/jpm_directory.xml") };
+
+    StringArray commandLine;
 };
 
 
@@ -221,30 +224,37 @@ void usage()
 
 int main (int argc, char* argv[])
 {
-	StringArray commandLineArguments;
+    StringArray commandLineArguments;
 
-	for (int i = 0; i < argc; ++i)
-		commandLineArguments.add(argv[i]); 
+    for (int i = 0; i < argc; ++i)
+        commandLineArguments.add (argv[i]);
 
-	if (commandLineArguments.size() <= 1)
-	{
-		usage();
-		return 1;
-	}
+    if (commandLineArguments.size() <= 1)
+    {
+        usage();
+        return 1;
+    }
 
-	/* 
-	This mega-try/catch probably isn't the best idea. Though it's a commandline failure and
-	some hard-failure modes are probably not inappropriate. 
-	*/
-	try {
-		App app(commandLineArguments);
-		app.run(); 
-	} 
-	catch (InvalidJucerFormat)
-	{
-		std::cerr << "exception: invalid jucer file format" << std::endl;
-		return 1;
-	}
+    /*
+    This mega-try/catch probably isn't the best idea. Though it's a commandline failure and
+    some hard-failure modes are probably not inappropriate.
+    */
+    try
+    {
+        App app (commandLineArguments);
+        app.run();
+    }
+    catch (InvalidJucerFormat)
+    {
+        std::cerr << "exception: invalid jucer file format" << std::endl;
+        return 1;
+    }
+    catch (JpmFatalExcepton e)
+    {
+        std::cerr << "exception: " << e.error << std::endl;
+        std::cerr << "exception: " << e.debugInfo << std::endl;
+        return 1;
+    }
 
     return 0;
 }

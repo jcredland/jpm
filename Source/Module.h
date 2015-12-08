@@ -19,119 +19,139 @@
 class Module
 {
 public:
-	Module() : state("module") {}
+    Module() : state ("module") {}
 
-	Module(ValueTree & state_)
-	{
-		state = state_;
+    Module (ValueTree& state_)
+    {
+        state = state_;
 
-		if (! getValidSources().contains(getSource()))
-			std::cerr << "error: invalid source: " << getSource() << std::endl;
-	}
+        if (! getValidSources().contains (getSource()))
+            std::cerr << "error: invalid source: " << getSource() << std::endl;
+    }
 
-	ValueTree getStateAsValueTree() const { return state; }
+    ValueTree getStateAsValueTree() const
+    {
+        return state;
+    }
 
-	bool isValid() const { return getName().isNotEmpty(); }
+    bool isValid() const
+    {
+        return getName().isNotEmpty();
+    }
 
     /** Return a one line view that'll be used for 'jpm list' */
-	String getSummaryString() const
-	{
+    String getSummaryString() const
+    {
         String name = getRepo() + "/" + getName();
-        return name.paddedRight(' ', 40) + getDescription();
-	}
+        return name.paddedRight (' ', 40) + getDescription();
+    }
 
-	/** Install this module into a destination folder. */
-	void install(const File & destinationFolder)
-	{
-		File file;
+    /** Install this module into a destination folder. */
+    void install (const File& destinationFolder)
+    {
+        File file;
 
-		if (getSource() == "GitHub")
-		{
-			GitHubSource github; 
-			auto result = github.download(getPath(), getVersion(), getSubPath());
+        if (getSource() == "GitHub")
+        {
+            GitHubSource github;
+            auto result = github.download (getPath(), getVersion(), getSubPath());
 
-			if (! result.success)
-				return;
+            if (! result.success)
+                return;
 
-			file = result.file;
-			setVersion(result.actualVersionNumber); 
-		}
+            file = result.file;
+            setVersion (result.actualVersionNumber);
+        }
         else if (getSource() == "Local")
         {
-            
+
         }
-		else
-		{
-			std::cerr << "Invalid source " + getSource() << std::endl;
-		}
+        else
+        {
+            std::cerr << "Invalid source " + getSource() << std::endl;
+        }
 
-		if (! file.exists())
-		{
-			std::cerr << "Invalid module" << std::endl;
-			return;
-		}
+        if (! file.exists())
+        {
+            std::cerr << "Invalid module" << std::endl;
+            return;
+        }
 
-		auto result = file.copyDirectoryTo(destinationFolder.getChildFile(getName()));
+        auto result = file.copyDirectoryTo (destinationFolder.getChildFile (getName()));
 
-		if (!result)
-		{
-			std::cerr << "Problem copying module" << std::endl;
-		}
-	}
+        if (!result)
+        {
+            std::cerr << "Problem copying module" << std::endl;
+        }
+    }
 
-	/* Getters and setters. */
-	String getName() const {
-		return state["name"];
-	}
-	void setName(const String& name) {
-		state.setProperty("name", name, nullptr);
-	}
-	String getDescription() const {
-		return state["description"];
-	}
-	void setDescription(const String& description) {
-		state.setProperty("description", description, nullptr);
-	}
-	String getVersion() const {
-		return state["version"];
-	}
-	void setVersion(const String& version) {
-		state.setProperty("version", version, nullptr);
-	}
-	String getSource() const {
-		return state["source"];
-	}
-	void setSource(const String& source) {
-		state.setProperty("source", source, nullptr);
-	}
-	String getPath() const {
-		return state["path"];
-	}
-	void setPath(const String& path) {
-		state.setProperty("path", path, nullptr);
-	}
-	String getSubPath() const {
-		return state["subpath"];
-	}
-	void setSubPath(const String& subpath) {
-		state.setProperty("subpath", subpath, nullptr);
-	}
-	String getRepo() const {
-		return state["repo"];
-	}
-	void setRepo(const String& repo) {
-		state.setProperty("repo", repo, nullptr);
-	}
+    /* Getters and setters. */
+    String getName() const
+    {
+        return state["name"];
+    }
+    void setName (const String& name)
+    {
+        state.setProperty ("name", name, nullptr);
+    }
+    String getDescription() const
+    {
+        return state["description"];
+    }
+    void setDescription (const String& description)
+    {
+        state.setProperty ("description", description, nullptr);
+    }
+    String getVersion() const
+    {
+        return state["version"];
+    }
+    void setVersion (const String& version)
+    {
+        state.setProperty ("version", version, nullptr);
+    }
+    String getSource() const
+    {
+        return state["source"];
+    }
+    void setSource (const String& source)
+    {
+        state.setProperty ("source", source, nullptr);
+    }
+    String getPath() const
+    {
+        return state["path"];
+    }
+    void setPath (const String& path)
+    {
+        state.setProperty ("path", path, nullptr);
+    }
+    String getSubPath() const
+    {
+        return state["subpath"];
+    }
+    void setSubPath (const String& subpath)
+    {
+        state.setProperty ("subpath", subpath, nullptr);
+    }
+    String getRepo() const
+    {
+        return state["repo"];
+    }
+    void setRepo (const String& repo)
+    {
+        state.setProperty ("repo", repo, nullptr);
+    }
 private:
-	static StringArray & getValidSources() 
-	{
-		static StringArray validSources;
-		validSources.add("GitHub"); 
-		validSources.add("LocalPath"); 
-		return validSources;
-	}
+    static StringArray& getValidSources()
+    {
+        static StringArray validSources;
+        validSources.add ("GitHub");
+        validSources.add ("LocalPath");
+        return validSources;
+    }
 
-	ValueTree state;
+    ValueTree state;
 };
 
 

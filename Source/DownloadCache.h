@@ -3,91 +3,141 @@
 #define DOWNLOADCACHE_H_INCLUDED
 
 #include "../JuceLibraryCode/JuceHeader.h"
+#include "Utilities.h"
 #include <iostream>
 
-/** 
-Stores downloaded files in a temporary loction and reuses those temporary files when 
-a download is requested. 
+/**
+Stores downloaded files in a temporary loction and reuses those temporary files when
+a download is requested.
 */
 class DownloadCache
 {
 public:
-	DownloadCache()
-	{
-		location = File::getSpecialLocation(File::userApplicationDataDirectory).getChildFile("jpm.modulecache");
-		location.createDirectory();
-	}
+    DownloadCache()
+    {
+        location = File::getSpecialLocation (File::userApplicationDataDirectory).getChildFile ("jpm.modulecache");
+        location.createDirectory();
+    }
 
-	void clearCache()
-	{
-		location.deleteRecursively();
-		location.createDirectory();
-	}
+    void clearCache()
+    {
+        location.deleteRecursively();
+        location.createDirectory();
+    }
 
-	String downloadTextFile(URL file)
-	{
-		auto target = getCachedFileLocation(file); 
+    String downloadTextFile (URL remoteFile)
+    {
+        auto cachedFile = getCachedFileLocation (remoteFile);
 
-		if (target.exists() && isRecent(target))
-			return target.loadFileAsString();
+        if (cachedFile.exists() && isRecent (cachedFile))
+            return cachedFile.loadFileAsString();
 
-		String result = file.readEntireTextStream();
+        String result = remoteFile.readEntireTextStream();
 
-		target.replaceWithText(result); 
+        if (result.isEmpty())
+            return cachedFile.loadFileAsString(); /* fallback to cached version. */
+        
+        cachedFile.replaceWithText (result);
+        return result;
+    }
 
-		return result;
-	}
+    File getCachedFileLocation (const URL& urlToGet)
+    {
+        int64 hash = urlToGet.toString (true).hashCode64();
+        return location.getChildFile (String (hash));
+    }
 
-	File getCachedFileLocation(const URL& urlToGet)
-	{
-		int64 hash = urlToGet.toString(true).hashCode64();
-		return location.getChildFile(String(hash));
-	}
+    /** Return true if the file is less than an hour old. */
+    bool isRecent (const File& filename)
+    {
+        auto modTime = filename.getLastModificationTime();
+        auto curTime = Time::getCurrentTime();
+        auto age = RelativeTime::milliseconds (curTime.toMilliseconds() - modTime.toMilliseconds());
+        return age < RelativeTime::hours (1);
+    }
 
-	/** Return true if the file is less than an hour old. */
-	bool isRecent(const File & filename)
-	{
-		auto modTime = filename.getLastModificationTime();
-		auto curTime = Time::getCurrentTime();
-		auto age = RelativeTime::milliseconds(curTime.toMilliseconds() - modTime.toMilliseconds());
-		return age < RelativeTime::hours(1);
-	}
+    /** Downloads a file or retrieves it from the cache.  Returns a location where the file can be found.
+     Displays error messages for all failure modes. */
+    File downloadUrlAndUncompress (URL urlToGet)
+    {
+        auto target = getCachedFileLocation (urlToGet);
 
-	/** Downloads a file or retrieves it from the cache.  Returns a location where the file can be found. */
-	File downloadUrlAndUncompress(URL urlToGet)
-	{
-		auto target = getCachedFileLocation(urlToGet);
+        if (target.exists() && isRecent (target))
+            return target;
 
-		if (target.exists() && isRecent(target))
-			return target;
-		
-		MemoryBlock memoryBlock;
+        MemoryBlock memoryBlock;
 
-		if (!urlToGet.readEntireBinaryStream(memoryBlock, false))
-		{
-			std::cout << "error: downloading " + urlToGet.toString(false) << std::endl;
-			if (target.exists())
-				return target; 
-			else
-				return File::nonexistent;
-		}
+        if (! readEntireBinaryStreamWithProgressBar (urlToGet, memoryBlock))
+        {
+            auto urlString = urlToGet.toString (false);
 
-		MemoryInputStream inputStream(memoryBlock, false);
+            if (target.exists())
+            {
+                printWarning ("error downloading file - using cached version of " + urlString);
+                return target;
+            }
+            else
+            {
+                printError ("No suitable file cached - aborting - could not download " + urlString);
+                return File::nonexistent;
+            }
+        }
 
-		std::cout << "Uncompressing to " << target.getFullPathName() << std::endl;
-		ZipFile zip(inputStream);
-		auto result = zip.uncompressTo(target, true); 
+        MemoryInputStream inputStream (memoryBlock, false);
 
-		if (result.failed())
-		{
-			std::cout << result.getErrorMessage() << std::endl;
-			return File::nonexistent;
-		}
+        std::cout << "Uncompressing to " << target.getFullPathName() << std::endl;
+        ZipFile zip (inputStream);
+        auto result = zip.uncompressTo (target, true);
 
-		return target;
-	}
+        if (result.failed())
+        {
+            printError (result.getErrorMessage());
+            return File::nonexistent;
+        }
 
-	File location;
+        return target;
+    }
+
+    static bool progressBar (void* context, int bytesSent, int totalBytes)
+    {
+        std::cout << "\rConnecting..." << bytesSent << "/" << totalBytes << "\r";
+        return true; /* means continue the download. */
+    }
+
+    static bool readEntireBinaryStreamWithProgressBar (URL url, MemoryBlock& destData)
+    {
+        const ScopedPointer<InputStream> in (url.createInputStream (false,
+                                             &DownloadCache::progressBar));
+
+        if (in != nullptr)
+        {
+            int64 total = 0;
+            int64 numBytesReceived = 0;
+            int64 totalAvailable = in->getTotalLength();
+
+            do
+            {
+                MemoryOutputStream mo (destData, true);
+                numBytesReceived = mo.writeFromInputStream (*in, 4096);
+                total += numBytesReceived;
+                std::cout
+                        << "\rDownload Progress: "
+                        << total / 1024
+                        << "k of "
+                        << totalAvailable / 1024
+                        << "k             \r";
+            }
+            while (numBytesReceived == 4096);
+
+            std::cout << std::endl;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    File location;
 };
 
 

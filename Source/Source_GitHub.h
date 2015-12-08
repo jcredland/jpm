@@ -15,97 +15,94 @@
 #include "Utilities.h"
 #include <iostream>
 
-class Source 
+class Source
 {
 public:
-	virtual ~Source() {}
-	virtual StringArray getAvailableVersions() = 0; 
-	struct DownloadInfo
-	{
-		String actualVersionNumber;
-		File file;
-		bool success {false};
-	};
+    virtual ~Source() {}
+    virtual StringArray getAvailableVersions() = 0;
+    struct DownloadInfo
+    {
+        String actualVersionNumber;
+        File file;
+        bool success {false};
+    };
 };
 
-inline String trimSlashes(String text)
+inline String trimSlashes (String text)
 {
-	if (text.endsWithChar('/')) 
-		text = text.dropLastCharacters(1);
+    if (text.endsWithChar ('/'))
+        text = text.dropLastCharacters (1);
 
-	if (text.startsWithChar('/')) 
-		return text.substring(1);
+    if (text.startsWithChar ('/'))
+        return text.substring (1);
 
-	return text; 
+    return text;
 }
 
 class GitHubSource
-	:
-	public Source
+    :
+    public Source
 {
 public:
-	DownloadInfo download(const String & path, String version, const String & subpath)
-	{
+    DownloadInfo download (const String& path, String version, const String& subpath)
+    {
         if (version.isEmpty())
         {
             version = "master";
-            printWarning("no version selected, using tip of master branch");
+            printWarning ("no version selected, using tip of master branch");
         }
-        
-		DownloadInfo downloadInfo;
 
-		printInfo("downloading: " + path);
+        DownloadInfo downloadInfo;
 
-		URL url("https://www.github.com/" + trimSlashes(path) + "/archive/" + version + ".zip");
-		printInfo("url: " + url.toString(true));
+        printInfo ("downloading: " + path);
 
-		DownloadCache cache;
-		auto file = cache.downloadUrlAndUncompress(url);
+        URL url ("https://www.github.com/" + trimSlashes (path) + "/archive/" + version + ".zip");
+        printInfo ("url: " + url.toString (true));
 
-		if (file == File::nonexistent)
-		{
-			printError("Could not obtain file");
-			return downloadInfo;
-		}
+        DownloadCache cache;
+        auto file = cache.downloadUrlAndUncompress (url);
 
-		Array<File> subFolders; 
-		file.findChildFiles(subFolders, File::findDirectories, false, "*"); 
+        if (file == File::nonexistent)
+            return downloadInfo;
 
-		if (subFolders.size() != 1)
-			printError("warning: download cache contains mutiple subfolders.  either github have change their api or you should clear your cache");
+        Array<File> subFolders;
+        file.findChildFiles (subFolders, File::findDirectories, false, "*");
 
-		downloadInfo.file = file.getChildFile(subFolders[0].getFileName()).getChildFile(trimSlashes(subpath)); 
+        if (subFolders.size() != 1)
+            printError ("warning: download cache contains mutiple subfolders.  either github have change their api or you should clear your cache");
 
-		if (downloadInfo.file.exists())
-			downloadInfo.success = true;
-		else
-			printError("error: could not find subpath");
+        downloadInfo.file = file.getChildFile (subFolders[0].getFileName()).getChildFile (trimSlashes (subpath));
 
-		if (version == "master")
-			downloadInfo.actualVersionNumber = getMasterGitCommitReference(path);
-		else
-			downloadInfo.actualVersionNumber = version;
+        if (downloadInfo.file.exists())
+            downloadInfo.success = true;
+        else
+            printError ("error: could not find subpath");
 
-		return downloadInfo;
-	}
+        if (version == "master")
+            downloadInfo.actualVersionNumber = getMasterGitCommitReference (path);
+        else
+            downloadInfo.actualVersionNumber = version;
 
-	String getMasterGitCommitReference(const String & path)
-	{
-		URL url("https://api.github.com/repos/" + trimSlashes(path) + "/commits/master"); 
+        return downloadInfo;
+    }
 
-		auto data = url.readEntireTextStream(false);
-		auto json = JSON::fromString(data); 
-		auto sha1 = json.getProperty("sha", String::empty).toString(); 
+    String getMasterGitCommitReference (const String& path)
+    {
+        URL url ("https://api.github.com/repos/" + trimSlashes (path) + "/commits/master");
 
-		printInfo("got master commit at " + sha1);
+        auto data = url.readEntireTextStream (false);
+        auto json = JSON::fromString (data);
+        auto sha1 = json.getProperty ("sha", String::empty).toString();
 
-		return sha1;
-	}
+        printInfo ("got master commit at " + sha1);
 
-	StringArray getAvailableVersions() override
-	{
-		return StringArray("master"); 
-	}
+        return sha1;
+    }
+
+    StringArray getAvailableVersions() override
+    {
+        return StringArray ("master");
+    }
 };
 
 

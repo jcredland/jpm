@@ -13,19 +13,31 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
-inline void printWarning(const String & s)
+class JpmFatalExcepton
 {
-    std::cout << "** " << s << std::endl;
+public:
+    JpmFatalExcepton (const String& error_, const String& debugInfo_)
+        :
+        error (error_), debugInfo (debugInfo_)
+    {}
+
+    String error;
+    String debugInfo;
+};
+
+inline void printWarning (const String& s)
+{
+    std::cout << "jpm **   : " << s << std::endl;
 }
 
-inline void printInfo(const String & s)
+inline void printInfo (const String& s)
 {
-    std::cout << "   " << s << std::endl;
+    std::cout << "jpm      : " << s << std::endl;
 }
 
-inline void printError(const String & s)
+inline void printError (const String& s)
 {
-    std::cout << "!! " << s << std::endl;
+    std::cout << "jpm error: " << s << std::endl;
 }
 
 
