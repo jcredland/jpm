@@ -1,0 +1,10 @@
+#!/bin/sh
+if [ ! -e jpm.jucer ] ; then
+   echo you should run this from the root of the project
+   exit 1
+fi 
+cd Builds/MacOSX
+xcodebuild -configuration=Release
+cd ../..
+mkdir -p binaries/mac
+cp Builds/MacOSX/build/Release/jpm binaries/mac/jpm

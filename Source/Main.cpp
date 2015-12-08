@@ -200,7 +200,7 @@ private:
 void usage()
 {
     std::cout << std::endl;
-    std::cout << "jpm - a juce package manager" << std::endl;
+    std::cout << "jpm - a juce package manager  (version 0.01)" << std::endl;
     std::cout << std::endl;
     std::cout << "ESSENTIAL COMMANDS" << std::endl;
     std::cout << "jpm install <source>      add and install a modules" << std::endl;

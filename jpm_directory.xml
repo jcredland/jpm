@@ -1,0 +1,34 @@
+<jpm_directory>	
+	<repo shortname="juce" path="/julianstorer/JUCE/" source="GitHub">
+		<module name="juce_audio_basics" description="Classes for audio buffer manipulation, midi message handling, synthesis, etc" subpath="modules/juce_audio_basics"/> 
+		<module name="juce_audio_devices" description="Classes to play and record from audio and midi i/o devices" subpath="modules/juce_audio_devices"/> 
+		<module name="juce_audio_formats" description="Classes for reading and writing various audio file formats" subpath="modules/juce_audio_formats"/> 
+		<module name="juce_audio_plugin_client" description="Classes for building VST, VST3, RTAS, AAX and AU plugins" subpath="modules/juce_audio_plugin_client"/> 
+		<module name="juce_audio_processors" description="Classes for loading and playing VST, AU, or internally-generated audio processors" subpath="modules/juce_audio_processors"/> 
+		<module name="juce_audio_utils" description="Classes for audio-related GUI and miscellaneous tasks" subpath="modules/juce_audio_utils"/> 
+		<module name="juce_box2d" description="The Box2D physics engine and some utility classes." subpath="modules/juce_box2d"/> 
+		<module name="juce_browser_plugin_client" description="Classes for building NPAPI and ActiveX browser plugins." subpath="modules/juce_browser_plugin_client"/> 
+		<module name="juce_core" description="The essential set of basic JUCE classes, as required by all the other JUCE modules. Includes text, container, memory, threading and i/o functionality." subpath="modules/juce_core"/> 
+		<module name="juce_cryptography" description="Classes for various basic cryptography functions, including RSA, Blowfish, MD5, SHA, etc." subpath="modules/juce_cryptography"/> 
+		<module name="juce_data_structures" description="Classes for undo/redo management, and smart data structures." subpath="modules/juce_data_structures"/> 
+		<module name="juce_events" description="Classes for running an application's main event loop and sending/receiving messages, timers, etc." subpath="modules/juce_events"/> 
+		<module name="juce_graphics" description="Classes for 2D vector graphics, image loading/saving, font handling, etc" subpath="modules/juce_graphics"/> 
+		<module name="juce_gui_basics" description="Basic user-interface components and related classes." subpath="modules/juce_gui_basics"/> 
+		<module name="juce_gui_extra" description="Miscellaneous GUI classes for specialised tasks." subpath="modules/juce_gui_extra"/> 
+		<module name="juce_opengl" description="Classes for rendering OpenGL in a JUCE window." subpath="modules/juce_opengl"/> 
+		<module name="juce_osc" description="Open Sound Control implementation" subpath="modules/juce_osc"/> 
+		<module name="juce_tracktion_marketplace" description="JUCE classes for online product authentication via the Tracktion marketplace." subpath="modules/juce_tracktion_marketplace"/> 
+		<module name="juce_video" description="Classes for playing video and capturing camera input." subpath="modules/juce_video"/> 
+	</repo>
+	<repo shortname="credland" path="/jcredland/juce-toys/" source="GitHub">
+		<module name="jcf_debug" description="Debugging utilities for JUCE" subpath="/jcf_debug"/>
+	</repo>
+
+	<repo shortname="drowaudio" path="/drowaudio/drowaudio/" source="GitHub">
+		<module name="drowaudio" description="DRowAudio audio utilities" subpath="drowaudio-master/"/>
+	</repo>
+
+	<repo shortname="drowaudio-stk" path="/drowaudio/stk_module/" source="GitHub">
+		<module name="stk" description="Synth toolkit wrapper" subpath="stk_module-master/"/>
+	</repo>
+</jpm_directory>

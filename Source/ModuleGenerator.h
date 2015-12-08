@@ -41,6 +41,19 @@ String readEntireTextStreamCustomHeaders (URL url)
     return String();
 }
 
+
+class GitHubLicenseApi
+{
+public:
+    static String getText(const String & licenseCode)
+    {
+        URL url("https://api.github.com/licenses/" + licenseCode);
+        auto text = readEntireTextStreamCustomHeaders(url);
+        var response = JSON::fromString(text);
+        return response["body"];
+    }
+};
+
 /**
  The user will want to do something like:
    jpm genmodule <folder_name> <namespace>
@@ -115,24 +128,18 @@ public:
     
     void usage()
     {
-        String u;
-        u += "genmodule <source_folder> <namespace> [<required dependencies...>]";
-        u += "\n";
-        u += "\n";
-        u += "\n";
-        u += "A juce_module_info file will be added to the source_folder.";
-        u += "\n";
-        u += "The source_folder name will be used as the module name.";
-        u += "\n";
-        u += "source_folder.h source_folder.mm source_folder.cpp files will";
-        u += "\n";
-        u += "be created in that folder overwriting any previous versions";
-        u += "\n";
-        u += "\n";
-        u += "This generator won't cope with any hugely complicated situations!";
-        u += "\n";
+        String usage =
+        "\n"
+        "genmodule <source_folder> <namespace> [<required dependencies...>]" "\n"
+        "\n"
+        "\n"
+        "A juce_module_info file will be added to the source_folder." "\n"
+        "The source_folder name will be used as the module name." "\n"
+        "source_folder.h source_folder.mm source_folder.cpp files will" "\n"
+        "be created in that folder overwriting any previous versions" "\n"
+        "\n";
         
-        std::cerr << u << std::endl;
+        std::cerr << usage;
     }
 
     
@@ -185,7 +192,7 @@ public:
     void appendNamespaceStart(String & t)
     {
         t += "\n";
-        t += "namespace " + namespaceName + "{"; /* This could be better ... */
+        t += "namespace " + namespaceName + " {"; /* This could be better ... */
         t += "\n";
     }
     
@@ -205,7 +212,7 @@ public:
         t += "\n";
         t += "/*";
         t += "\n";
-        t += getLicenseText("mit");
+        t += GitHubLicenseApi::getText("mit");
         t += "\n";
         t += "*/";
         t += "\n";
@@ -236,6 +243,7 @@ public:
         includes.add("AppConfig.h"); 
         includes.add(folder.getFileName() + ".h"); 
 
+        appendLicenseComment(t);
         appendIncludes(t, includes); 
         appendNamespaceStart(t); 
         appendIncludes(t, sourceFiles); 
@@ -255,16 +263,7 @@ public:
         return t;
     }
     
-    
-    String getLicenseText(const String & licenseCode)
-    {
-        printInfo("retrieving license from github - currently set to MIT license");
-        URL url("https://api.github.com/licenses/" + licenseCode);
-        auto text = readEntireTextStreamCustomHeaders(url);
-        var response = JSON::fromString(text);
-        return response["body"];
-    }
-    
+   
 private:
     StringArray dependencies;
     StringArray headerFiles;
