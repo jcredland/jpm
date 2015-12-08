@@ -4,7 +4,7 @@ if [ ! -e jpm.jucer ] ; then
    exit 1
 fi 
 cd Builds/MacOSX
-xcodebuild -configuration=Release
+xcodebuild -configuration Release
 cd ../..
 mkdir -p binaries/mac
 cp Builds/MacOSX/build/Release/jpm binaries/mac/jpm

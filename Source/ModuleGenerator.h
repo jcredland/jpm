@@ -19,6 +19,9 @@ namespace ModuleIds
     ID(include)
     ID(compile)
     ID(browse)
+
+    ID(file)
+    ID(target)
     
     ID(OSXFrameworks)
     ID(iOSFrameworks)
@@ -65,23 +68,63 @@ public:
 
     void writeJuceModuleInfo()
     {
+        auto name = folder.getFileName();
         auto json = new DynamicObject();
-        json->setProperty(ModuleIds::id, folder.getFileName());
-        json->setProperty(ModuleIds::name, folder.getFileName());
+        json->setProperty(ModuleIds::id, name);
+        json->setProperty(ModuleIds::name, name);
         json->setProperty(ModuleIds::version, "0.0.1");
         json->setProperty(ModuleIds::description, "Add description");
         json->setProperty(ModuleIds::website, "Add URL");
         json->setProperty(ModuleIds::license, "Not Specified");
         
+        /* Dependencies. */
         Array<var> deps; 
 
         for (auto d: dependencies)
-            deps.add(var(d)); 
-
+        {
+            auto depInfo = new DynamicObject(); 
+            depInfo->setProperty(ModuleIds::id, d); 
+            depInfo->setProperty(ModuleIds::version, "matching"); /* I don't know what this actually does! */
+            deps.add(depInfo); 
+        }
         json->setProperty(ModuleIds::dependencies, deps); 
 
-        File output = folder.getChildFile("juce_module_info"); 
+        /* Include. */
+        json->setProperty(ModuleIds::include, name + ".h"); 
 
+        /* Compile */
+        Array<var> compile;
+        {
+            auto c = new DynamicObject(); 
+            c->setProperty(ModuleIds::file, name + ".cpp"); 
+            c->setProperty(ModuleIds::target, "! xcode"); 
+            compile.add(c);
+        }
+
+        {
+            auto c = new DynamicObject(); 
+            c->setProperty(ModuleIds::file, name + ".mm"); 
+            c->setProperty(ModuleIds::target, "xcode"); 
+            compile.add(c);
+        }
+
+        json->setProperty(ModuleIds::compile, compile); 
+        /* Browse */
+        {
+            Array<var> browse; 
+            Array<File> directories;
+            folder.findChildFiles(directories, File::findDirectories, true, "*"); 
+
+            for (auto f: directories)
+                browse.add(f.getRelativePathFrom(folder) + "/*"); 
+
+            json->setProperty(ModuleIds::browse, browse); 
+        }
+
+        /* Blank frameworks and libraries requirements */
+
+        /* Write it. */
+        File output = folder.getChildFile("juce_module_info"); 
         output.replaceWithText(JSON::toString(var(json)));
     }
 
@@ -184,8 +227,8 @@ public:
     {
         for (auto d: dependencies)
         {
-            t += "../" + d + "/" + d + ".h";
-            t += "\n";
+            String includeFile = "modules/" + d + "/" + d + ".h";
+            t += "#include <" + includeFile + ">\n";
         }
     }
     

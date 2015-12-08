@@ -2,7 +2,7 @@
 
 <JUCERPROJECT id="VeoNiQ" name="jpm" projectType="consoleapp" version="1.0.0"
               bundleIdentifier="com.yourcompany.jpm" includeBinaryInAppConfig="1"
-              jucerVersion="4.0.2">
+              jucerVersion="3.2.0">
   <MAINGROUP id="lKnX28" name="jpm">
     <GROUP id="{B94692A7-5AFA-84B6-3ED4-855A7936E9F0}" name="Source">
       <FILE id="LtFqOC" name="ConfigFile.h" compile="0" resource="0" file="Source/ConfigFile.h"/>
