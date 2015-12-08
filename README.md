@@ -50,7 +50,7 @@ Lots.  It'd be good if it could install the introjucer, yes? :)
     jpm erasecache            erase the download cache
 
     OTHER COMMANDS
-    jpm genmodule <name>      create a module template [ not yet implemented ]
+    jpm genmodule <name>      create a module template [ beta ]
     jpm rebuildjucer          rewrite the modules section of the jucer file
 
     Run this from the root of your JUCE project

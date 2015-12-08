@@ -210,7 +210,7 @@ void usage()
     std::cout << "jpm erasecache            erase the download cache" << std::endl;
     std::cout << std::endl;
     std::cout << "OTHER COMMANDS" << std::endl;
-    std::cout << "jpm genmodule <name>      create a module template [ not yet implemented ]" << std::endl;
+    std::cout << "jpm genmodule <name>      create a module template [ beta ]" << std::endl;
     std::cout << "jpm rebuildjucer          rewrite the modules section of the jucer file" << std::endl;
     std::cout << std::endl;
     std::cout << "Run this from the root of your JUCE project" << std::endl;
