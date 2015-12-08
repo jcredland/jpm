@@ -94,6 +94,12 @@ private:
     void addLocalModule (const String& userSuppliedPath)
     {
         File folder (File::getCurrentWorkingDirectory().getChildFile (userSuppliedPath));
+        
+        if (! folder.exists())
+        {
+            printError("module " + folder.getFullPathName() + " not found");
+            return;
+        }
 
         Module m;
         m.setSource ("LocalPath");
