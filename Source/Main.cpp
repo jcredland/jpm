@@ -98,7 +98,9 @@ private:
         m.setSource("LocalPath"); 
         m.setName(folder.getFileNameWithoutExtension());
         m.setVersion("NA"); 
-        m.setPath(userSuppliedPath); 
+        /* A path provided by the user is made relative to the project, and without the module
+         * folder itself being included to avoid confusing the introjucer. */
+        m.setPath(folder.getParentDirectory().getRelativePathFrom(File::getCurrentWorkingDirectory())); 
         config.addModule(m);
 
         rebuildJucerModuleList();
