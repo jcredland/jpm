@@ -133,6 +133,19 @@ public:
         output.replaceWithText (JSON::toString (var (json)));
     }
 
+    StringArray getSubfolders()
+    {
+        StringArray array;
+        Array<File> directories;
+        folder.findChildFiles (directories, File::findDirectories, true, "*");
+
+        for (auto f : directories)
+            array.add (f.getRelativePathFrom (folder));
+
+        return array;
+    }
+
+
     void writeSources()
     {
         auto header = folder.getChildFile (folder.getFileName() + ".h");
@@ -142,6 +155,23 @@ public:
         header.replaceWithText (getHeader());
         cpp.replaceWithText (getSourceCpp());
         mm.replaceWithText (getSourceObjectiveC());
+    }
+
+    void writeDoxygen()
+    {
+        auto doxyfile = folder.getChildFile("Doxyfile"); 
+
+        String sources = getSubfolders().joinIntoString(" ");
+
+        String doxygenContent =
+            "PROJECT_NAME = " + folder.getFileName() +  "\n"
+            "INPUT = " + sources +                      "\n"
+            "OUTPUT_DIRECTORY = docs"                   "\n"
+            "GENERATE_LATEX         = NO"               "\n"
+            "GENERATE_HTML          = YES"              "\n"
+            "HTML_OUTPUT            = ."                "\n";
+
+        doxyfile.replaceWithText(doxygenContent); 
     }
 
     void run (const StringArray& commandLine)
@@ -171,6 +201,7 @@ public:
             printInfo (h);
 
         writeSources();
+        writeDoxygen(); 
         writeJuceModuleInfo();
     }
 
@@ -284,6 +315,7 @@ public:
         appendHeaderGuard (t);
         appendDependencies (t);
         appendNamespaceStart (t);
+        t += "using namespace juce;\n";
         appendIncludes (t, headerFiles);
 
         t += "}\n"; /* end namespace */

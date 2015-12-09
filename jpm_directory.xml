@@ -22,6 +22,7 @@
 	</repo>
 	<repo shortname="credland" path="/jcredland/juce-toys/" source="GitHub">
 		<module name="jcf_debug" description="Debugging utilities for JUCE" subpath="/jcf_debug"/>
+		<module name="multithreading" description="Classes to help with non-locking multithreading issues in real-time software" subpath="/multithreading"/>
 	</repo>
 
 	<repo shortname="drowaudio" path="/drowaudio/drowaudio/" source="GitHub">
