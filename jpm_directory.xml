@@ -31,4 +31,8 @@
 	<repo shortname="drowaudio-stk" path="/drowaudio/stk_module/" source="GitHub">
 		<module name="stk" description="Synth toolkit wrapper" subpath="stk_module-master/"/>
 	</repo>
+    <repo shortname="danlin" path="/danlin/danlin_modules" source="GitHub">
+        <module name="fontawesome" description="Font Awesome toolkit" subpath="/fontawesome"/> 
+    </repo>
 </jpm_directory>
+
