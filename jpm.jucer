@@ -2,10 +2,11 @@
 
 <JUCERPROJECT id="VeoNiQ" name="jpm" projectType="consoleapp" version="1.0.0"
               bundleIdentifier="com.yourcompany.jpm" includeBinaryInAppConfig="1"
-              jucerVersion="3.2.0">
+              jucerVersion="4.0.2">
   <MAINGROUP id="lKnX28" name="jpm">
     <GROUP id="{B94692A7-5AFA-84B6-3ED4-855A7936E9F0}" name="Source">
       <FILE id="LtFqOC" name="ConfigFile.h" compile="0" resource="0" file="Source/ConfigFile.h"/>
+      <FILE id="i2wYjr" name="Database.h" compile="0" resource="0" file="Source/Database.h"/>
       <FILE id="YYUaVX" name="Directory.h" compile="0" resource="0" file="Source/Directory.h"/>
       <FILE id="HSdcxm" name="DownloadCache.h" compile="0" resource="0" file="Source/DownloadCache.h"/>
       <FILE id="GjXqK2" name="JucerFile.h" compile="0" resource="0" file="Source/JucerFile.h"/>
@@ -29,10 +30,10 @@
                        isDebug="0" optimisation="3" targetName="jpm"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
-        <MODULEPATH id="juce_core" path="..\..\Code\juce\modules"/>
-        <MODULEPATH id="juce_events" path="..\..\Code\juce\modules"/>
-        <MODULEPATH id="juce_data_structures" path="..\..\Code\juce\modules"/>
-        <MODULEPATH id="juce_cryptography" path="..\..\Code\juce\modules"/>
+        <MODULEPATH id="juce_core" path="..\..\juce\modules"/>
+        <MODULEPATH id="juce_events" path="..\..\juce\modules"/>
+        <MODULEPATH id="juce_data_structures" path="..\..\juce\modules"/>
+        <MODULEPATH id="juce_cryptography" path="..\..\juce\modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
     <VS2015 targetFolder="Builds/VisualStudio2015">
@@ -43,10 +44,10 @@
                        isDebug="0" optimisation="3" targetName="jpm"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
-        <MODULEPATH id="juce_events" path="..\..\Code\juce\modules"/>
-        <MODULEPATH id="juce_data_structures" path="..\..\Code\juce\modules"/>
-        <MODULEPATH id="juce_cryptography" path="..\..\Code\juce\modules"/>
-        <MODULEPATH id="juce_core" path="..\..\Code\juce\modules"/>
+        <MODULEPATH id="juce_events" path="..\..\juce\modules"/>
+        <MODULEPATH id="juce_data_structures" path="..\..\juce\modules"/>
+        <MODULEPATH id="juce_cryptography" path="..\..\juce\modules"/>
+        <MODULEPATH id="juce_core" path="..\..\juce\modules"/>
       </MODULEPATHS>
     </VS2015>
   </EXPORTFORMATS>
