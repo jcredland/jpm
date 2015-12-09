@@ -74,11 +74,11 @@ private:
         }
 
         if (modules.size() > 1)
-            printWarning ("installing " + String (modules.size()) + " modules");
+            printInfo ("installing " + String (modules.size()) + " modules");
 
         for (auto module : modules)
         {
-            printWarning ("installing: " + module.getRepo() + "/" + module.getName() + "@" + module.getVersion());
+            printHeading ("installing: " + module.getRepo() + "/" + module.getName() + "@" + module.getVersion());
 
             if (module.isValid())
             {
@@ -202,7 +202,7 @@ private:
     ConfigFile config;
     JucerFile jucer;
 
-    URL directoryUrl { URL ("http://www.credland.net/jpm_directory.xml") };
+    URL directoryUrl { URL ("https://raw.githubusercontent.com/jcredland/jpm/master/jpm_directory.xml") };
 
     StringArray commandLine;
 };

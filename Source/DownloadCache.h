@@ -6,13 +6,15 @@
 #include "Utilities.h"
 #include <iostream>
 
-/**
-Stores downloaded files in a temporary loction and reuses those temporary files when
-a download is requested.
-*/
+/** 
+ * Stores downloaded files in a temporary loction and reuses those temporary
+ * files when a download is requested.
+ */
 class DownloadCache
 {
 public:
+    const int cacheRefreshMinutes { 60 }; 
+
     DownloadCache()
     {
         location = File::getSpecialLocation (File::userApplicationDataDirectory).getChildFile ("jpm.modulecache");
@@ -53,11 +55,13 @@ public:
         auto modTime = filename.getLastModificationTime();
         auto curTime = Time::getCurrentTime();
         auto age = RelativeTime::milliseconds (curTime.toMilliseconds() - modTime.toMilliseconds());
-        return age < RelativeTime::hours (1);
+        return age < RelativeTime::minutes (cacheRefreshMinutes);
     }
 
-    /** Downloads a file or retrieves it from the cache.  Returns a location where the file can be found.
-     Displays error messages for all failure modes. */
+    /** 
+     * Downloads a file or retrieves it from the cache.  Returns a location
+     * where the file can be found.  Displays error messages for all failure
+     * modes. */
     File downloadUrlAndUncompress (URL urlToGet)
     {
         auto target = getCachedFileLocation (urlToGet);
@@ -85,7 +89,8 @@ public:
 
         MemoryInputStream inputStream (memoryBlock, false);
 
-        std::cout << "Uncompressing to " << target.getFullPathName() << std::endl;
+        printInfo("uncompressing to " + target.getFullPathName());
+
         ZipFile zip (inputStream);
         auto result = zip.uncompressTo (target, true);
 
@@ -100,7 +105,7 @@ public:
 
     static bool progressBar (void* context, int bytesSent, int totalBytes)
     {
-        std::cout << "\rConnecting..." << bytesSent << "/" << totalBytes << "\r";
+        std::cout << "Connecting..." << bytesSent << "/" << totalBytes << "\r";
         return true; /* means continue the download. */
     }
 
@@ -121,7 +126,7 @@ public:
                 numBytesReceived = mo.writeFromInputStream (*in, 4096);
                 total += numBytesReceived;
                 std::cout
-                        << "\rDownload Progress: "
+                        << "download progress ... "
                         << total / 1024
                         << "k of "
                         << totalAvailable / 1024

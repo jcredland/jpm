@@ -28,6 +28,7 @@ ID (iOSFrameworks)
 ID (LinuxLibs)
 ID (mingwLibs)
 };
+
 #undef ID
 
 /**
@@ -66,6 +67,9 @@ class ModuleGenerator
 public:
     ModuleGenerator() {}
 
+    /**
+     * Creates a basic juce_module_info. 
+     */
     void writeJuceModuleInfo()
     {
         auto name = folder.getFileName();
@@ -174,13 +178,19 @@ public:
     {
         String usage =
             "\n"
-            "genmodule <source_folder> <namespace> [<required dependencies...>]" "\n"
+            "genmodule <source_folder> <namespace> [<required dependencies...>]"    "\n"
             "\n"
+            "Genmodule helps you create simple JUCE modules quickly"                "\n"
             "\n"
-            "A juce_module_info file will be added to the source_folder." "\n"
-            "The source_folder name will be used as the module name." "\n"
-            "source_folder.h source_folder.mm source_folder.cpp files will" "\n"
-            "be created in that folder overwriting any previous versions" "\n"
+            "Using: Create a folder with the name of your module, and a subfolder"  "\n"
+            "or more with source code in them.  Then run something like:"           "\n"
+            "\n"
+            "jpm genmodule my_folder_name namespacename juce_core juce_graphics"    "\n"
+            "\n"
+            "and gen module will create (or overwrite!) the files you need in"      "\n"
+            "the root of your folder"                                               "\n"
+            "\n"
+            "Read the instructions in the README.md on github"                      "\n"
             "\n";
 
         std::cerr << usage;

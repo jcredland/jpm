@@ -54,8 +54,6 @@ public:
 
         DownloadInfo downloadInfo;
 
-        printInfo ("downloading: " + path);
-
         URL url ("https://www.github.com/" + trimSlashes (path) + "/archive/" + version + ".zip");
         printInfo ("url: " + url.toString (true));
 

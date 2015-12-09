@@ -8,49 +8,6 @@
 #include "DownloadCache.h"
 #include <iostream>
 
-/** Provides an STL compatible iterator for the children of ValueTree. */
-class ValueTreeChildrenConnector
-{
-public:
-    ValueTreeChildrenConnector (const ValueTree& tree) : tree (tree) {}
-
-    class Iterator
-    {
-    public:
-        Iterator (ValueTree& tree, int position) : tree (tree), pos (position) {}
-        Iterator& operator++()
-        {
-            ++pos;
-            return *this;
-        }
-        bool operator!= (const Iterator& other) const
-        {
-            return other.pos != pos || other.tree != tree;
-        }
-        ValueTree operator * () const
-        {
-            return tree.getChild (pos);
-        }
-
-    private:
-        Iterator& operator= (const Iterator&) = delete;
-        ValueTree& tree;
-        int pos;
-    };
-
-    Iterator begin()
-    {
-        return Iterator (tree, 0);
-    }
-    Iterator end()
-    {
-        return Iterator (tree, tree.getNumChildren());
-    }
-
-private:
-    JUCE_DECLARE_NON_COPYABLE (ValueTreeChildrenConnector)
-    ValueTree tree;
-};
 
 /** Decodes module names in the format repo/name@version */
 class ModuleName
@@ -79,27 +36,28 @@ private:
     String name;
 };
 
-/** Holds an index of where to find specific modules.  We may want more than one of these in the end. */
+/** Holds an index of where to find specific modules.  We may want more than
+ * one of these in the end. */
 class Directory
 {
 public:
+    /*
+     * Directory entries are <repo>.  
+     * <repo> has properties shortname, path and source. 
+     * shortname - a non-unique identifier. 
+     * source - determines the routines used for download and extraction (e.g. GitHub, LocalPath)
+     * path - source dependant reference to the data
+     *
+     * <module> is a child of <repo> with properties:
+     * name - name of module
+     * description - description
+     * subpath - again source dependent but used for finding the module
+     */
+
     /**
-    Directory URL file has the following format for GitHub:
-
-    <repo shortname="juce" path="/julianstorer/JUCE/" source="GitHub">
-    	<module
-            name="juce_core"
-            description="Some helpful information about the module"
-            subpath="modules/juce_core"/>
-    </source>
-
-    repo - used to differentiate different hosts for the same code
-
-    "source" determines the engine used to retrieve the module.  GitHub for
-    example appends the version number to the URL then downloads the zip file and
-    expands it.  Then looks in the subpath under that expanded zip file for the
-    module source.
-    */
+     * Opens a directory with the given URL, downloading the latest version of
+     * the contents. 
+     */
     Directory (URL location)
     {
         DownloadCache cache;
@@ -113,37 +71,28 @@ public:
         else
         {
             throw JpmFatalExcepton ("directory format error or network problem",
-                                    "Check " + cache.getCachedFileLocation (location).getFullPathName() + " for debugging which should contain the contents of " + location.toString (true));
+                                    "Check " 
+                                    + cache.getCachedFileLocation (location).getFullPathName() 
+                                    + " for debugging which should contain the contents of " 
+                                    + location.toString (true));
         }
     }
 
 
-    /**
-    Find all the modules with a specific name.
-    moduleName can be specified as to match a specific version in a specific repo: juce/juce_core@3.1.1
-    In this case it should match one entry, but there's no guarantee of that!
+    /** 
+     * Find all the modules with a specific name.  moduleName can be specified
+     * as to match a specific version in a specific repo: juce/juce_core@3.1.1
+     * In this case it should match one entry, but there's no guarantee of
+     * that!
     */
     Array<Module> getModulesByName (const String& moduleNameString)
     {
         Array<Module> results;
-
         ModuleName module (moduleNameString);
 
-        if (module.getRepo().isNotEmpty())
+        for (auto repoEntry : ValueTreeChildrenConnector (directory))
         {
-            auto repoEntry = directory.getChildWithProperty ("shortname", module.getRepo());
-
-            if (repoEntry == ValueTree::invalid)
-            {
-                printError ("repo not found " + module.getRepo());
-                return results;
-            }
-
-            results.addArray (getMatchingModulesFromRepo (repoEntry, module.getName()));
-        }
-        else
-        {
-            for (auto repoEntry : ValueTreeChildrenConnector (directory))
+            if (module.getRepo().isEmpty() || repoEntry["shortname"] == module.getRepo())
                 results.addArray (getMatchingModulesFromRepo (repoEntry, module.getName()));
         }
 
@@ -164,10 +113,12 @@ private:
         {
             if (moduleEntry["name"].toString().matchesWildcard (name, false))
             {
+                /* We use this short lambda for validating the mandatory fields
+                 * in the directory. */
                 auto test = [&repoEntry] (const String & text)
                 {
                     if (text.isEmpty())
-                        std::cerr << "warning: error in directory for repo " << repoEntry["shortname"].toString() << std::endl;
+                        printWarning("warning: error in directory for repo " + repoEntry["shortname"].toString());
 
                     return text;
                 };
@@ -191,7 +142,5 @@ private:
     }
     ValueTree directory;
 };
-
-
 
 #endif  // REPOSITORY_H_INCLUDED
