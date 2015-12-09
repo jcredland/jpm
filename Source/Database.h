@@ -13,14 +13,14 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "Module.h"
-#include "DownloadCache.h"
-#include <iostream>
 
 #define DATABASE_URL        "https://codegarden.cloudant.com/jpm/"
 #define READ_ONLY_KEY       "romenglentiouldissionged"
 #define READ_ONLY_PASSWORD  "cbe04fcf61bd85eb946e31ce0c310adabc2986b4"
 
-class Database 
+/** Class for accessing and querying the jpm Cloudant database
+*/
+ class Database
 {
 public:
     
@@ -31,22 +31,17 @@ public:
                          "Authorization: Basic " + Base64::toBase64 (String(READ_ONLY_KEY) + ":" + String(READ_ONLY_PASSWORD)));
     }
     
-    Array<Module> getModulesByName (const String & moduleNameString)
+    Array<Module> textSearch (const String & searchString)
     {
         Array<Module> result;
         
-        // Build query string to find module or module set based on shortname
-        String query = String ("{ \"selector\": { \"shortname\": \"" + moduleNameString + "\" } }");
+        String query = String ("{ \"selector\": { \"$text\": \"" + searchString + "\" } }");
         //DBG (query);
         
         // Cloudant's text query facility
         post ("/_find", query);
         
-        if (status < 200 || status > 300)
-        {
-            std::cerr << "fatal: returned status " << status << ":" << std::endl;
-            std::cerr << queryResult;
-        }
+        checkStatus();
         
         //DBG (queryResult);
         var parsedQuery = JSON::parse (queryResult);
@@ -55,22 +50,108 @@ public:
         var docs = parsedQuery["docs"];
         if (docs.isArray())
         {
-            for (auto doc : *docs.getArray())
+            for (auto repo : *docs.getArray())
             {
-                var moduleSet = doc["module"];
+                var moduleSet = repo["module"];
                 if (moduleSet.isArray())
                 {
                     for (auto module : *moduleSet.getArray())
                     {
                         DBG (module["name"].toString());
-                        result.add (createModuleFromVar (doc, module));
+                        result.add (createModuleFromVar (repo, module));
                     }
                 }
                 else
                 {
                     DBG (moduleSet.getProperty("name", "n/a").toString());
-                    result.add (createModuleFromVar (doc, moduleSet));
+                    result.add (createModuleFromVar (repo, moduleSet));
                 }
+            }
+        }
+        
+        return result;
+    }
+    
+    Array<Module> getModulesInRepo (const String & repoNameString)
+    {
+        Array<Module> result;
+        
+        // Build query string to find module or module set based on shortname
+        String query = String ("{ \"selector\": { \"shortname\": \"" + repoNameString + "\" } }");
+        //DBG (query);
+        
+        // Cloudant's text query facility
+        post ("/_find", query);
+        
+        checkStatus();
+        
+        //DBG (queryResult);
+        var parsedQuery = JSON::parse (queryResult);
+        
+        // Traverse down the var to grab our data
+        var docs = parsedQuery["docs"];
+        if (docs.isArray())
+        {
+            for (auto repo : *docs.getArray())
+            {
+                var moduleSet = repo["module"];
+                if (moduleSet.isArray())
+                {
+                    for (auto module : *moduleSet.getArray())
+                    {
+                        DBG (module["name"].toString());
+                        result.add (createModuleFromVar (repo, module));
+                    }
+                }
+                else
+                {
+                    DBG (moduleSet.getProperty("name", "n/a").toString());
+                    result.add (createModuleFromVar (repo, moduleSet));
+                }
+            }
+        }
+
+        return result;
+    }
+    
+    /** Get modules matching a given name.
+     *  This calls a pre-defined 'view' which is a javascript map function defined on the database.
+     *
+     *  For reference the map function, as of the last update to this file:
+     *      function (doc) {
+     *          if (doc.module) {
+     *              if (Array.isArray(doc.module)) {
+     *                  doc.module.forEach (function (module) {
+     *                      emit (module.name, {repo: {shortname: doc.shortname, path: doc.path, source: doc.source}, module: module});
+     *                  });
+     *              } else {
+     *                  emit (doc.module.name, {repo: {shortname: doc.shortname, path: doc.path, source: doc.source}, module: doc.module});
+     *              }
+     *          }
+     *      }
+     */
+    Array<Module> getModulesByName (const String & moduleNameString)
+    {
+        Array<Module> result;
+        ModuleName module(moduleNameString);
+        
+        // Call predefined "module-name" view.
+        
+        get ("_design/module-views/_view/module-name?key=%22" + moduleNameString + "%22");
+        
+        checkStatus();
+        
+        DBG (queryResult);
+        var parsedQuery = JSON::parse (queryResult);
+        
+        // Get our data from return rows
+        var rows = parsedQuery["rows"];
+        if (rows.isArray())
+        {
+            for (auto row : *rows.getArray())
+            {
+                var value = row["value"];
+                result.add (createModuleFromVar (value["repo"], value["module"]));
             }
         }
 
@@ -79,24 +160,37 @@ public:
     
 private:
     
+    /** Check for error status, print message and return false if error status found
+     */
+    bool checkStatus()
+    {
+        if (status < 200 || status > 300)
+        {
+            std::cerr << "fatal: returned status " << status << ":" << std::endl;
+            std::cerr << queryResult;
+            return false;
+        }
+        return true;
+    }
+    
     /**
-     Create and return a Module given a var that represents a returned document,
+     Create and return a Module given a var that represents a returned repository,
      and a var that represents a single module entry
      */
-    Module createModuleFromVar (var doc, var module)
+    Module createModuleFromVar (var repo, var module)
     {
-        auto test = [&doc](const String & text)
+        auto test = [&repo](const String & text)
         {
             if (text.isEmpty())
-                std::cerr << "warning: error in json for repo " << doc["shortname"].toString() << std::endl;
+                std::cerr << "warning: error in json for repo " << repo["shortname"].toString() << std::endl;
             return text;
         };
         
         Module m;
         
-        m.setRepo (test (doc["shortname"]));
-        m.setPath (test (doc["path"]));
-        m.setSource (test (doc["source"]));
+        m.setRepo (test (repo["shortname"]));
+        m.setPath (test (repo["path"]));
+        m.setSource (test (repo["source"]));
         m.setName (test (module["name"]));
         m.setSubPath (test (module["subpath"]));
         
@@ -104,6 +198,23 @@ private:
         m.setDescription (module["description"]);
         
         return m;
+    }
+    
+    /**
+     create a GET HTTP request to an endpoint based on the stored URL
+     and store the result
+     */
+    void get (const String & endpoint)
+    {
+        const ScopedPointer<InputStream> in(url.getChildURL (endpoint).createInputStream (false, nullptr, nullptr, headers, 0, &responseHeaders, &status));
+        
+        //for (auto key : responseHeaders.getAllKeys())
+        //{
+        //    DBG (key << ": " << responseHeaders.getValue(key, "n/a"));
+        //}
+        //DBG (status);
+
+        queryResult = in->readEntireStreamAsString();
     }
     
     /**
@@ -119,7 +230,7 @@ private:
         //    DBG (key << ": " << responseHeaders.getValue(key, "n/a"));
         //}
         //DBG (status);
-
+        
         queryResult = in->readEntireStreamAsString();
     }
     
