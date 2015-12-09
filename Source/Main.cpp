@@ -189,8 +189,8 @@ private:
 		//auto result = directory.getModulesByName(searchString);
 		auto result = database.getModulesByName(searchString);
 
-//		for (auto r: result)
-//			std::cout << r.getSummaryString() << std::endl;
+		for (auto r: result)
+			std::cout << r.getSummaryString() << std::endl;
 	}
 
     void add()
