@@ -69,12 +69,17 @@ public:
         if (subFolders.size() != 1)
             printError ("warning: download cache contains mutiple subfolders.  either github have change their api or you should clear your cache");
 
-        downloadInfo.file = file.getChildFile (subFolders[0].getFileName()).getChildFile (trimSlashes (subpath));
+        auto folderInsideZip = file.getChildFile (subFolders[0].getFileName()); 
+        downloadInfo.file = folderInsideZip.getChildFile (trimSlashes (subpath));
 
-        if (downloadInfo.file.exists())
-            downloadInfo.success = true;
-        else
-            printError ("error: could not find subpath");
+        if (! downloadInfo.file.exists())
+        {
+            printError ("could not find subpath " + trimSlashes(subpath));
+            printError ("in folder " + folderInsideZip.getFullPathName()); 
+            return downloadInfo;
+        }
+
+        downloadInfo.success = true;
 
         if (version == "master")
             downloadInfo.actualVersionNumber = getMasterGitCommitReference (path);

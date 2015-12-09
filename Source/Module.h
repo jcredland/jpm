@@ -62,7 +62,7 @@ public:
             file = result.file;
             setVersion (result.actualVersionNumber);
         }
-        else if (getSource() == "Local")
+        else if (getSource() == "LocalPath")
         {
 
         }

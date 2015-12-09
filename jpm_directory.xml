@@ -32,7 +32,7 @@
 		<module name="stk" description="Synth toolkit wrapper" subpath="stk_module-master/"/>
 	</repo>
     <repo shortname="danlin" path="/danlin/danlin_modules" source="GitHub">
-        <module name="fontawesome" description="Font Awesome toolkit" subpath="/modules"/> 
+        <module name="danlin_fontawesome"  description="Font Awesome toolkit" subpath="/modules/danlin_fontawesome"/> 
     </repo>
 </jpm_directory>
 
