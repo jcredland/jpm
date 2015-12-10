@@ -29,7 +29,7 @@ public:
      * Opens a directory with the given URL, downloading the latest version of
      * the contents. 
 	*/
-    Directory(URL location)
+    Directory()
 	{
 		DownloadCache cache;
 		String file = cache.downloadFromDatabase();
@@ -40,14 +40,12 @@ public:
         }
 		else
         {
-            throw JpmFatalExcepton ("directory format error or network problem",
+            throw JpmFatalExcepton ("data empty, network or filesystem problem",
                                     "Check " 
-                                    + cache.getCachedFileLocation (location).getFullPathName() 
-                                    + " for debugging which should contain the contents of " 
-                                    + location.toString (true));
+                                    + cache.getCachedDatabaseLocation ().getFullPathName()
+                                    + " for debugging which should contain any returned data");
 		}
 	}
-    }
 
 
 	/** 

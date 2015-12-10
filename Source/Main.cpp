@@ -65,7 +65,7 @@ private:
 	/** Add a modules to the jpmfile.xml and install it. */
 	void addModuleFromDirectory(const String & moduleName)
 	{
-        Directory directory (directoryUrl);
+        Directory directory;
 		auto modules = directory.getModulesByName(moduleName);
 
 		if (modules.size() == 0)
@@ -178,7 +178,7 @@ private:
 
 	void list()
 	{
-        Directory directory (directoryUrl);
+        Directory directory;
 		String searchString;
 
 		if (commandLine.size() == 0)
@@ -203,7 +203,6 @@ private:
 
 	ConfigFile config;
 	JucerFile jucer;	
-	Directory directory;
     Database database;
 
 	StringArray commandLine;
