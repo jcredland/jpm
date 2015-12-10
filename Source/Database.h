@@ -20,7 +20,7 @@
 
 /** Class for accessing and querying the jpm Cloudant database
 */
- class Database
+class Database
 {
 public:
     
@@ -31,10 +31,58 @@ public:
                          "Authorization: Basic " + Base64::toBase64 (String(READ_ONLY_KEY) + ":" + String(READ_ONLY_PASSWORD)));
     }
     
-    Array<Module> textSearch (const String & searchString)
+    
+    /** Massage the returned data into a simpler array format
+     */
+    static var parseToArray(String json)
     {
-        Array<Module> result;
+        var array;
+        var parsedJson = JSON::parse(json);
+        var rows = parsedJson["rows"];
+        for (auto row : *rows.getArray())
+        {
+            array.append(row["value"]);
+        }
+        return array;
+    }
+    
+    
+    /** Get all repositories and module data as text for local storage
+     */
+    String getAllModulesAsJSON()
+    {
+        // Call predefined "all-modules" view.
         
+        get ("_design/module-views/_view/all-modules");
+        
+        DBG (queryResult);
+        
+        if (checkStatus())
+            return queryResult;
+        else
+            return String();
+    }
+    
+//    /** Convert all-modules view result into ValueTree
+//     */
+//    ValueTree modulesJSONToDirectory (String modulesJSON)
+//    {
+//        var directory;
+//        var parsedQuery = JSON::parse (modulesJSON);
+//        // Get our data from return rows
+//        var rows = parsedQuery["rows"];
+//        if (rows.isArray())
+//        {
+//            for (auto row : *rows.getArray())
+//            {
+//                var value = row["value"];
+//                directory.append (value);
+//            }
+//        }
+//    }
+
+    String textSearch (const String & searchString)
+    {
         String query = String ("{ \"selector\": { \"$text\": \"" + searchString + "\" } }");
         //DBG (query);
         
@@ -43,9 +91,12 @@ public:
         
         checkStatus();
         
-        //DBG (queryResult);
-        var parsedQuery = JSON::parse (queryResult);
+
+        DBG (queryResult);
         
+        /*
+        var parsedQuery = JSON::parse (queryResult);
+
         // Traverse down the var to grab our data
         var docs = parsedQuery["docs"];
         if (docs.isArray())
@@ -68,13 +119,13 @@ public:
                 }
             }
         }
+         */
         
-        return result;
+        return queryResult;
     }
     
-    Array<Module> getModulesInRepo (const String & repoNameString)
+    String getModulesInRepo (const String & repoNameString)
     {
-        Array<Module> result;
         
         // Build query string to find module or module set based on shortname
         String query = String ("{ \"selector\": { \"shortname\": \"" + repoNameString + "\" } }");
@@ -85,7 +136,9 @@ public:
         
         checkStatus();
         
-        //DBG (queryResult);
+        DBG (queryResult);
+        
+        /*
         var parsedQuery = JSON::parse (queryResult);
         
         // Traverse down the var to grab our data
@@ -110,8 +163,9 @@ public:
                 }
             }
         }
+        */
 
-        return result;
+        return queryResult;
     }
     
     /** Get modules matching a given name.
@@ -130,10 +184,10 @@ public:
      *          }
      *      }
      */
-    Array<Module> getModulesByName (const String & moduleNameString)
+    String getModulesByName (const String & moduleNameString)
     {
-        Array<Module> result;
-        ModuleName module(moduleNameString);
+//        Array<Module> result;
+//        ModuleName module(moduleNameString);
         
         // Call predefined "module-name" view.
         
@@ -141,23 +195,28 @@ public:
         
         checkStatus();
         
-        DBG (queryResult);
-        var parsedQuery = JSON::parse (queryResult);
-        
-        // Get our data from return rows
-        var rows = parsedQuery["rows"];
-        if (rows.isArray())
-        {
-            for (auto row : *rows.getArray())
-            {
-                var value = row["value"];
-                result.add (createModuleFromVar (value["repo"], value["module"]));
-            }
-        }
+//        DBG (queryResult);
+//        var parsedQuery = JSON::parse (queryResult);
+//        
+//        // Get our data from return rows
+//        var rows = parsedQuery["rows"];
+//        if (rows.isArray())
+//        {
+//            for (auto row : *rows.getArray())
+//            {
+//                var value = row["value"];
+//                result.add (createModuleFromVar (value["repo"], value["module"]));
+//            }
+//        }
 
-        return result;
+        return queryResult;
     }
     
+    URL &getURL()
+    {
+        return url;
+    }
+
 private:
     
     /** Check for error status, print message and return false if error status found
@@ -172,33 +231,34 @@ private:
         }
         return true;
     }
+
     
-    /**
-     Create and return a Module given a var that represents a returned repository,
-     and a var that represents a single module entry
-     */
-    Module createModuleFromVar (var repo, var module)
-    {
-        auto test = [&repo](const String & text)
-        {
-            if (text.isEmpty())
-                std::cerr << "warning: error in json for repo " << repo["shortname"].toString() << std::endl;
-            return text;
-        };
-        
-        Module m;
-        
-        m.setRepo (test (repo["shortname"]));
-        m.setPath (test (repo["path"]));
-        m.setSource (test (repo["source"]));
-        m.setName (test (module["name"]));
-        m.setSubPath (test (module["subpath"]));
-        
-        /* Description is allowed to be empty. */
-        m.setDescription (module["description"]);
-        
-        return m;
-    }
+//    /**
+//     Create and return a Module given a var that represents a returned repository,
+//     and a var that represents a single module entry
+//     */
+//    Module createModuleFromVar (var repo, var module)
+//    {
+//        auto test = [&repo](const String & text)
+//        {
+//            if (text.isEmpty())
+//                std::cerr << "warning: error in json for repo " << repo["shortname"].toString() << std::endl;
+//            return text;
+//        };
+//        
+//        Module m;
+//        
+//        m.setRepo (test (repo["shortname"]));
+//        m.setPath (test (repo["path"]));
+//        m.setSource (test (repo["source"]));
+//        m.setName (test (module["name"]));
+//        m.setSubPath (test (module["subpath"]));
+//        
+//        /* Description is allowed to be empty. */
+//        m.setDescription (module["description"]);
+//        
+//        return m;
+//    }
     
     /**
      create a GET HTTP request to an endpoint based on the stored URL

@@ -47,8 +47,6 @@ public:
 
 		if (command == "list")
 			list();
-        else if (command == "search")
-			search();
         else if (command == "install")
 			install();
         else if (command == "genmodule")
@@ -188,23 +186,12 @@ private:
 		else
 			searchString = commandLine[0];
 
-		auto result = database.getModulesByName (searchString);
+        DBG ("searching for " << searchString);
+		auto result = directory.getModulesByName (searchString);
 
 		for (auto r: result)
 			std::cout << r.getSummaryString() << std::endl;
 	}
-    
-    void search()
-    {
-		String searchString;
-
-        searchString = commandLine[0];
-
-		auto result = database.textSearch (searchString);
-
-		for (auto r: result)
-			std::cout << r.getSummaryString() << std::endl;
-    }
 
     void add()
     {
@@ -233,7 +220,6 @@ void usage()
     std::cout << "jpm install               download any missing modules for the current project" << std::endl;
     std::cout << "jpm add <source>          add a local module without using the directory" << std::endl;
     std::cout << "jpm list [<wildcard>]     show all available modules, e.g. jpm list *core*" << std::endl;
-    std::cout << "jpm search                full text search of available modules [ experimental ]" << std::endl;
     std::cout << "jpm erasecache            erase the download cache" << std::endl;
     std::cout << std::endl;
     std::cout << "OTHER COMMANDS" << std::endl;
