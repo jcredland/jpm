@@ -8,35 +8,6 @@
 #include "DownloadCache.h"
 #include <iostream>
 
-/** Provides an STL compatible iterator for the children of ValueTree. */
-class ValueTreeChildrenConnector
-{
-public:
-	ValueTreeChildrenConnector(const ValueTree & tree) : tree(tree) {}
-
-	class Iterator
-	{
-	public:
-		Iterator(ValueTree & tree, int position) : tree(tree), pos(position) {}
-		Iterator & operator++() { ++pos; return *this; }
-		bool operator!= (const Iterator & other) const { return other.pos != pos || other.tree != tree; }
-		ValueTree operator * () const { return tree.getChild(pos); }
-
-	private:
-		Iterator & operator=(const Iterator &) = delete;
-		ValueTree & tree;
-		int pos;
-	};
-
-	Iterator begin() { return Iterator(tree, 0); }
-	Iterator end() { return Iterator(tree, tree.getNumChildren()); }
-
-private:
-	JUCE_DECLARE_NON_COPYABLE(ValueTreeChildrenConnector)
-		ValueTree tree;
-};
-
-
 /** Holds an index of where to find specific modules.  We may want more than one of these in the end. */
 class Directory
 {
