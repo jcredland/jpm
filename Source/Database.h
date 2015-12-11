@@ -12,7 +12,6 @@
 #define DATABASE_H_INCLUDED
 
 #include "../JuceLibraryCode/JuceHeader.h"
-#include "Module.h"
 
 #define DATABASE_URL        "https://codegarden.cloudant.com/jpm/"
 #define READ_ONLY_KEY       "romenglentiouldissionged"
@@ -63,24 +62,6 @@ public:
             return String();
     }
     
-//    /** Convert all-modules view result into ValueTree
-//     */
-//    ValueTree modulesJSONToDirectory (String modulesJSON)
-//    {
-//        var directory;
-//        var parsedQuery = JSON::parse (modulesJSON);
-//        // Get our data from return rows
-//        var rows = parsedQuery["rows"];
-//        if (rows.isArray())
-//        {
-//            for (auto row : *rows.getArray())
-//            {
-//                var value = row["value"];
-//                directory.append (value);
-//            }
-//        }
-//    }
-
     String textSearch (const String & searchString)
     {
         String query = String ("{ \"selector\": { \"$text\": \"" + searchString + "\" } }");
@@ -90,36 +71,8 @@ public:
         post ("/_find", query);
         
         checkStatus();
-        
 
         DBG (queryResult);
-        
-        /*
-        var parsedQuery = JSON::parse (queryResult);
-
-        // Traverse down the var to grab our data
-        var docs = parsedQuery["docs"];
-        if (docs.isArray())
-        {
-            for (auto repo : *docs.getArray())
-            {
-                var moduleSet = repo["module"];
-                if (moduleSet.isArray())
-                {
-                    for (auto module : *moduleSet.getArray())
-                    {
-                        DBG (module["name"].toString());
-                        result.add (createModuleFromVar (repo, module));
-                    }
-                }
-                else
-                {
-                    DBG (moduleSet.getProperty("name", "n/a").toString());
-                    result.add (createModuleFromVar (repo, moduleSet));
-                }
-            }
-        }
-         */
         
         return queryResult;
     }
@@ -138,33 +91,6 @@ public:
         
         DBG (queryResult);
         
-        /*
-        var parsedQuery = JSON::parse (queryResult);
-        
-        // Traverse down the var to grab our data
-        var docs = parsedQuery["docs"];
-        if (docs.isArray())
-        {
-            for (auto repo : *docs.getArray())
-            {
-                var moduleSet = repo["module"];
-                if (moduleSet.isArray())
-                {
-                    for (auto module : *moduleSet.getArray())
-                    {
-                        DBG (module["name"].toString());
-                        result.add (createModuleFromVar (repo, module));
-                    }
-                }
-                else
-                {
-                    DBG (moduleSet.getProperty("name", "n/a").toString());
-                    result.add (createModuleFromVar (repo, moduleSet));
-                }
-            }
-        }
-        */
-
         return queryResult;
     }
     
@@ -186,28 +112,11 @@ public:
      */
     String getModulesByName (const String & moduleNameString)
     {
-//        Array<Module> result;
-//        ModuleName module(moduleNameString);
-        
         // Call predefined "module-name" view.
         
         get ("_design/module-views/_view/module-name?key=%22" + moduleNameString + "%22");
         
         checkStatus();
-        
-//        DBG (queryResult);
-//        var parsedQuery = JSON::parse (queryResult);
-//        
-//        // Get our data from return rows
-//        var rows = parsedQuery["rows"];
-//        if (rows.isArray())
-//        {
-//            for (auto row : *rows.getArray())
-//            {
-//                var value = row["value"];
-//                result.add (createModuleFromVar (value["repo"], value["module"]));
-//            }
-//        }
 
         return queryResult;
     }
@@ -232,34 +141,6 @@ private:
         return true;
     }
 
-    
-//    /**
-//     Create and return a Module given a var that represents a returned repository,
-//     and a var that represents a single module entry
-//     */
-//    Module createModuleFromVar (var repo, var module)
-//    {
-//        auto test = [&repo](const String & text)
-//        {
-//            if (text.isEmpty())
-//                std::cerr << "warning: error in json for repo " << repo["shortname"].toString() << std::endl;
-//            return text;
-//        };
-//        
-//        Module m;
-//        
-//        m.setRepo (test (repo["shortname"]));
-//        m.setPath (test (repo["path"]));
-//        m.setSource (test (repo["source"]));
-//        m.setName (test (module["name"]));
-//        m.setSubPath (test (module["subpath"]));
-//        
-//        /* Description is allowed to be empty. */
-//        m.setDescription (module["description"]);
-//        
-//        return m;
-//    }
-    
     /**
      create a GET HTTP request to an endpoint based on the stored URL
      and store the result
