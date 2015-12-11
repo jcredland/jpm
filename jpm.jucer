@@ -33,10 +33,10 @@
                        isDebug="0" optimisation="3" targetName="jpm"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
-        <MODULEPATH id="juce_core" path=".\juce\modules"/>
-        <MODULEPATH id="juce_events" path=".\juce\modules"/>
-        <MODULEPATH id="juce_data_structures" path=".\juce\modules"/>
-        <MODULEPATH id="juce_cryptography" path=".\juce\modules"/>
+        <MODULEPATH id="juce_core" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_events" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_cryptography" path="../../JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
     <VS2015 targetFolder="Builds/VisualStudio2015">

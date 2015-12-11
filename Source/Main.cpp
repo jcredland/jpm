@@ -23,7 +23,7 @@ void usage()
     std::cout << "jpm - a juce package manager  (version " << Constants::versionString << ")" << std::endl;
     std::cout << std::endl;
     std::cout << "ESSENTIAL COMMANDS" << std::endl;
-    std::cout << "jpm install <source>      add and install a modules" << std::endl;
+    std::cout << "jpm install <source>      add and install a module" << std::endl;
     std::cout << "jpm install               download any missing modules for the current project" << std::endl;
     std::cout << "jpm add <source>          add a local module without using the directory" << std::endl;
     std::cout << "jpm list [<wildcard>]     show all available modules, e.g. jpm list *core*" << std::endl;

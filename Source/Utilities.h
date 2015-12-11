@@ -46,7 +46,7 @@ public:
     /** Returns true if the output contained the substring specified. */
     bool hasLineContaining(const String & s) const
     {
-        DBG("** " + lines.size()); 
+        DBG("** " << lines.size());
 
         for (auto l: lines)
             if (l.contains(s))

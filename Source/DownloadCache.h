@@ -60,7 +60,7 @@ public:
         if (target.exists() && isRecent (target))
             return target.loadFileAsString();
 
-        String result = database.getAllModulesAsJSON();
+        String result = database.getAllModules();
 
         target.replaceWithText (result);
 

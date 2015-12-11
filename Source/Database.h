@@ -26,6 +26,8 @@ public:
                           "Authorization: Basic " + getAuthToken());
     }
 
+    /** Generate token for authorisation header
+     */
     String getAuthToken() const 
     {
         String s; 
@@ -44,10 +46,28 @@ public:
         var array;
         var parsedJson = JSON::parse (json);
         var rows = parsedJson["rows"];
-
+        
+        if (rows == var::null)
+        {
+            throw JpmFatalExcepton ("no rows found in data",
+                                    "Check cached data file for debugging which should contain any returned data");
+        }
+        
         for (auto row : *rows.getArray())
         {
-            array.append (row["value"]);
+            var value = row["value"];
+            var key = row["key"];
+            if (value != var::null)
+            {
+                array.append(value);
+            }
+            else
+            {
+                if (key == var::null)
+                    printError ("no value or key found for row");
+                else
+                    printError ("no value found for key " + row["key"].toString());
+            }
         }
 
         return array;
@@ -56,7 +76,7 @@ public:
 
     /** Get all repositories and module data as text for local storage
      */
-    String getAllModulesAsJSON()
+    String getAllModules()
     {
         // Call predefined "all-modules" view.
 
@@ -70,6 +90,12 @@ public:
             return String();
     }
 
+    /** Full text search using Cloudant's Lucene search facility
+     *
+     *  This needs some work to make it useful. Cloudant does not allow wildcards at the
+     *  start of a search string (as it can be resource hungry) so it can't currently
+     *  be used for the 'list' functionality.
+     */
     String textSearch (const String& searchString)
     {
         String query = String ("{ \"selector\": { \"$text\": \"" + searchString + "\" } }");
@@ -85,6 +111,8 @@ public:
         return queryResult;
     }
 
+    /** Get all modules in a repository
+     */
     String getModulesInRepo (const String& repoNameString)
     {
 
@@ -148,6 +176,15 @@ private:
 
         return true;
     }
+    
+    /** Generate exception if InputStream is null
+     */
+    void checkInputStream (InputStream* in, URL urlRequest)
+    {
+        if (! in)
+            throw JpmFatalExcepton ("could not create input stream for: " + urlRequest.toString (true),
+                                    "probably a build problem on linux where https support hasn't been compiled in");
+    }
 
     /**
      create a GET HTTP request to an endpoint based on the stored URL
@@ -159,9 +196,7 @@ private:
 
         ScopedPointer<InputStream> in (urlRequest.createInputStream (false, nullptr, nullptr, headers, 0, &responseHeaders, &status));
 
-        if (! in)
-            throw JpmFatalExcepton ("could not create input stream for: " + urlRequest.toString (true),
-                                    "probably a build problem on linux where https support hasn't been compiled in");
+        checkInputStream (in, urlRequest);
 
         //for (auto key : responseHeaders.getAllKeys())
         //{
@@ -182,9 +217,7 @@ private:
 
         ScopedPointer<InputStream> in (urlRequest.createInputStream (true, nullptr, nullptr, headers, 0, &responseHeaders, &status));
 
-        if (! in)
-            throw JpmFatalExcepton ("could not create input stream for: " + urlRequest.toString (true),
-                                    "probably a build problem on linux where https support hasn't been compiled in");
+        checkInputStream (in, urlRequest);
 
         //for (auto key : responseHeaders.getAllKeys())
         //{
@@ -194,6 +227,7 @@ private:
 
         queryResult = in->readEntireStreamAsString();
     }
+    
 
     URL url;
     StringPairArray responseHeaders;

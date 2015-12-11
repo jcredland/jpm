@@ -41,9 +41,7 @@ public:
         else
         {
             throw JpmFatalExcepton ("data empty, network or filesystem problem",
-                                    "Check "
-                                    + cache.getCachedDatabaseLocation ().getFullPathName()
-                                    + " for debugging which should contain any returned data");
+                                    "Check your internet connection or file permissions");
         }
     }
 
@@ -58,25 +56,27 @@ public:
     {
         Array<Module> results;
         ModuleName module (moduleNameString);
+        
+        if (! directory.isArray())
+        {
+            printError ("error - directory is not an array");
+        }
 
         if (module.getRepo().isNotEmpty())
         {
             var repoEntry;
-
-            if (directory.isArray())
+            
+            for (auto repo : *directory.getArray())
             {
-                for (auto repo : *directory.getArray())
+                if (repo["shortname"] != var::null && repo["shortname"] == module.getRepo())
                 {
-                    if (repo["shortname"] != var::null && repo["shortname"] == module.getRepo())
-                    {
-                        repoEntry = repo;
-                    }
+                    repoEntry = repo;
                 }
             }
-
+            
             if (repoEntry.isVoid())
             {
-                std::cerr << "repo not found " << module.getRepo() << std::endl;
+                printError ("repo not found " + module.getRepo());
                 return results;
             }
 
@@ -86,17 +86,10 @@ public:
         }
         else
         {
-            if (directory.isArray())
+            for (auto repoEntry : *directory.getArray())
             {
-                for (auto repoEntry : *directory.getArray())
-                {
-                    DBG ("get matching modules from " << repoEntry["shortname"].toString() << "...");
-                    results.addArray (getMatchingModulesFromRepo (repoEntry, module.getName()));
-                }
-            }
-            else
-            {
-                std::cerr << "error - directory is not an array" << std::endl;
+                DBG ("get matching modules from " << repoEntry["shortname"].toString() << "...");
+                results.addArray (getMatchingModulesFromRepo (repoEntry, module.getName()));
             }
         }
 
