@@ -18,7 +18,11 @@ namespace Constants
 
     constexpr static char versionString[] { "0.01" };
 
+#if JUCE_LINUX
     constexpr static char databaseUrl[] { "http://codegarden.cloudant.com/jpm/" };
+#else
+    constexpr static char databaseUrl[] { "https://codegarden.cloudant.com/jpm/" };
+#endif
     constexpr static char databaseKeyReadOnly[] { "romenglentiouldissionged" };
     constexpr static char databasePasswordReadOnly[] { "cbe04fcf61bd85eb946e31ce0c310adabc2986b4" };
 };
