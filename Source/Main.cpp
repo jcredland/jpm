@@ -145,7 +145,7 @@ private:
 
             if (!jpmModulesFolder.getChildFile (name).exists())
             {
-                std::cout << "installing: " << name << std::endl;
+                printInfo("installing: " + name);
                 module.install (jpmModulesFolder);
             }
         }

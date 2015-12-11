@@ -12,10 +12,7 @@
 #define DATABASE_H_INCLUDED
 
 #include "../JuceLibraryCode/JuceHeader.h"
-
-#define DATABASE_URL        "http://codegarden.cloudant.com/jpm/"
-#define READ_ONLY_KEY       "romenglentiouldissionged"
-#define READ_ONLY_PASSWORD  "cbe04fcf61bd85eb946e31ce0c310adabc2986b4"
+#include "Constants.h"
 
 /** Class for accessing and querying the jpm Cloudant database
 */
@@ -23,13 +20,20 @@ class Database
 {
 public:
 
-    Database() : url (DATABASE_URL)
+    Database() : url (Constants::databaseUrl)
     {
         headers = String ("Content-Type:application/json\n"
-                          "Authorization: Basic "
-                          + Base64::toBase64 (String (READ_ONLY_KEY)
-                                              + ":"
-                                              + String (READ_ONLY_PASSWORD)));
+                          "Authorization: Basic " + getAuthToken());
+    }
+
+    String getAuthToken() const 
+    {
+        String s; 
+        s += Constants::databaseKeyReadOnly; 
+        s += ":";
+        s += Constants::databasePasswordReadOnly; 
+
+        return Base64::toBase64 (s); 
     }
 
 

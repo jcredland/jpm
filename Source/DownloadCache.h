@@ -4,6 +4,7 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "Database.h"
+#include "Constants.h"
 #include <iostream>
 
 /**
@@ -13,11 +14,11 @@
 class DownloadCache
 {
 public:
-    const int cacheRefreshMinutes { 60 };
-
     DownloadCache()
     {
-        location = File::getSpecialLocation (File::userApplicationDataDirectory).getChildFile ("jpm.modulecache");
+        location = File::getSpecialLocation (File::userApplicationDataDirectory)
+            .getChildFile ("jpm.modulecache");
+
         location.createDirectory();
     }
 
@@ -83,7 +84,7 @@ public:
         auto modTime = filename.getLastModificationTime();
         auto curTime = Time::getCurrentTime();
         auto age = RelativeTime::milliseconds (curTime.toMilliseconds() - modTime.toMilliseconds());
-        return age < RelativeTime::minutes (cacheRefreshMinutes);
+        return age < RelativeTime::minutes (Constants::cacheRefreshMinutes);
     }
 
     /**

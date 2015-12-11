@@ -61,8 +61,6 @@ public:
 
         if (module.getRepo().isNotEmpty())
         {
-            std::cout << "searching one repo" << std::endl;
-
             var repoEntry;
 
             if (directory.isArray())
