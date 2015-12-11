@@ -16,6 +16,8 @@ namespace Constants
     /** How soon things expire from the download cache. */
     static const int cacheRefreshMinutes { 60 };
 
+    constexpr static char versionString[] { "0.01" };
+
     constexpr static char databaseUrl[] { "http://codegarden.cloudant.com/jpm/" };
     constexpr static char databaseKeyReadOnly[] { "romenglentiouldissionged" };
     constexpr static char databasePasswordReadOnly[] { "cbe04fcf61bd85eb946e31ce0c310adabc2986b4" };

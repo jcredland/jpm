@@ -20,7 +20,7 @@ ScopedPointer<OutputRecorder> outputRecorder;
 void usage()
 {
     std::cout << std::endl;
-    std::cout << "jpm - a juce package manager  (version 0.01)" << std::endl;
+    std::cout << "jpm - a juce package manager  (version " << Constants::versionString << ")" << std::endl;
     std::cout << std::endl;
     std::cout << "ESSENTIAL COMMANDS" << std::endl;
     std::cout << "jpm install <source>      add and install a modules" << std::endl;
@@ -34,6 +34,11 @@ void usage()
     std::cout << "jpm rebuildjucer          rewrite the modules section of the jucer file" << std::endl;
     std::cout << std::endl;
     std::cout << "Run this from the root of your JUCE project" << std::endl;
+    std::cout << std::endl;
+    std::cout << "Note: it will want to manage _all_ your modules and will replace" << std::endl;
+    std::cout << "any module information already in your jucer file.  It will not" << std::endl;
+    std::cout << "however overwrite any #define settings for modules you have set." << std::endl;
+
 }
 
 
@@ -80,3 +85,5 @@ int main (int argc, char* argv[])
 
     return 0;
 }
+
+

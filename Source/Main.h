@@ -7,7 +7,15 @@
 #include "Directory.h"
 #include "Database.h"
 #include "ConfigFile.h"
+#include "Constants.h"
 
+/**
+ * Main application.  This will be used both interactively by the user and also
+ * by the unit tests, so ensure you don't add anything that'll break testing. 
+ *
+ * At some point the commands will need refactoring out of this into some tidy
+ * little units.
+ */
 class App
 {
 public:
@@ -24,13 +32,9 @@ public:
             jucer->save();
     }
 
-    void openJucerFile()
-    {
-        jucer = new JucerFile();
-        jucer->setFile (File::getCurrentWorkingDirectory());
-    }
-
-
+    /**
+     * Main entry point.
+     */
     void run()
     {
         printInfo ("juce package manager");
@@ -44,9 +48,9 @@ public:
         else if (command == "genmodule")
             genmodule();
         else if (command == "rebuildjucer")
-            rebuildJucerModuleList();
+            rebuildjucer();
         else if (command == "erasecache")
-            DownloadCache().clearCache();
+            erasecache();
         else if (command == "add")
             add();
         else
@@ -54,6 +58,17 @@ public:
     }
 
 private:
+    /** Creates the JucerFile object and opens the jucer file 
+     * if it's not already been done. */
+    void openJucerFile()
+    {
+        if (! jucer)
+        {
+            jucer = new JucerFile();
+            jucer->setFile (File::getCurrentWorkingDirectory());
+        }
+    }
+
     /** Add a modules to the jpmfile.xml and install it. */
     void addModuleFromDirectory (const String& moduleName)
     {
@@ -80,10 +95,13 @@ private:
             }
         }
 
-        rebuildJucerModuleList();
+        rebuildjucer();
     }
 
 
+    /**
+     * Add a module that's already on the users local drive. 
+     */
     void addLocalModule (const String& userSuppliedPath)
     {
         File folder (File::getCurrentWorkingDirectory().getChildFile (userSuppliedPath));
@@ -103,7 +121,7 @@ private:
         m.setPath (folder.getParentDirectory().getRelativePathFrom (File::getCurrentWorkingDirectory()));
         config.addModule (m);
 
-        rebuildJucerModuleList();
+        rebuildjucer();
     }
 
     void addModuleToJucer (Module module)
@@ -116,18 +134,6 @@ private:
             jucer->addModule (module.getName());
     }
 
-    /** Update the jucer file with the latest list of modules. */
-    void rebuildJucerModuleList()
-    {
-        openJucerFile();
-
-        jucer->clearModules();
-
-        auto allModules = config.getModules();
-
-        for (auto m : allModules)
-            addModuleToJucer (m);
-    }
 
     /** Installs any modules that are missing from the jpm_modules folder. */
     void installMissingModules()
@@ -147,6 +153,25 @@ private:
         }
     }
 
+
+    /* Command-line command handlers:- */
+
+    void erasecache()
+    {
+        DownloadCache().clearCache();
+    }
+
+    void rebuildjucer()
+    {
+        openJucerFile();
+
+        jucer->clearModules();
+
+        auto allModules = config.getModules();
+
+        for (auto m : allModules)
+            addModuleToJucer (m);
+    }
 
     void install()
     {
@@ -203,3 +228,5 @@ private:
 
     StringArray commandLine;
 };
+
+
