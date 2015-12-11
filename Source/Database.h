@@ -14,6 +14,8 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "Constants.h"
 
+enum class AuthType { readOnly, readWrite };
+
 /** Class for accessing and querying the jpm Cloudant database
 */
 class Database
@@ -21,19 +23,25 @@ class Database
 public:
 
     Database() : url (Constants::databaseUrl)
+    {}
+
+    /** Generate HTTP header 
+     */
+    String generateHeader (AuthType authType = AuthType::readOnly)
     {
-        headers = String ("Content-Type:application/json\n"
-                          "Authorization: Basic " + getAuthToken());
+        return String ("Content-Type:application/json\n"
+                          "Authorization: Basic " + getAuthToken(authType));
+
     }
 
     /** Generate token for authorisation header
      */
-    String getAuthToken() const 
+    String getAuthToken(AuthType authType) const
     {
         String s; 
-        s += Constants::databaseKeyReadOnly; 
+        s += authType == AuthType::readOnly ? Constants::databaseKeyReadOnly : Constants::databaseKeyReadWrite;
         s += ":";
-        s += Constants::databasePasswordReadOnly; 
+        s += authType == AuthType::readOnly ? Constants::databasePasswordReadOnly : Constants::databasePasswordReadWrite;
 
         return Base64::toBase64 (s); 
     }
