@@ -8,36 +8,7 @@
 #include "DownloadCache.h"
 #include <iostream>
 
-
-/** Decodes module names in the format repo/name@version */
-class ModuleName
-{
-public:
-    ModuleName (const String& name_) : name (name_) {}
-
-    String getRepo() const
-    {
-        return name.contains ("/") ? name.upToFirstOccurrenceOf ("/", false, false) : String::empty;
-    }
-
-    String getVersion() const
-    {
-        return name.contains ("@") ? name.fromLastOccurrenceOf ("@", false, false) : String::empty;
-    }
-
-    String getName() const
-    {
-        if (name.contains ("/"))
-            return name.fromFirstOccurrenceOf ("/", false, false).upToLastOccurrenceOf ("@", false, false);
-
-        return name.upToLastOccurrenceOf ("@", false, false);
-    }
-private:
-    String name;
-};
-
-/** Holds an index of where to find specific modules.  We may want more than
- * one of these in the end. */
+/** Holds an index of where to find specific modules.  We may want more than one of these in the end. */
 class Directory
 {
 public:
@@ -53,94 +24,146 @@ public:
      * description - description
      * subpath - again source dependent but used for finding the module
      */
-
+	
     /**
      * Opens a directory with the given URL, downloading the latest version of
      * the contents. 
-     */
-    Directory (URL location)
-    {
-        DownloadCache cache;
-        String file = cache.downloadTextFile (location);
-        ScopedPointer<XmlElement> xml = XmlDocument (file).getDocumentElement();
+	*/
+    Directory()
+	{
+		DownloadCache cache;
+		String file = cache.downloadFromDatabase();
 
-        if (xml)
+		if (!file.isEmpty())
         {
-            directory = ValueTree::fromXml (*xml);
+			directory = Database::parseToArray (file);
         }
-        else
+		else
         {
-            throw JpmFatalExcepton ("directory format error or network problem",
+            throw JpmFatalExcepton ("data empty, network or filesystem problem",
                                     "Check " 
-                                    + cache.getCachedFileLocation (location).getFullPathName() 
-                                    + " for debugging which should contain the contents of " 
-                                    + location.toString (true));
-        }
-    }
+                                    + cache.getCachedDatabaseLocation ().getFullPathName()
+                                    + " for debugging which should contain any returned data");
+		}
+	}
 
 
-    /** 
+	/** 
      * Find all the modules with a specific name.  moduleName can be specified
      * as to match a specific version in a specific repo: juce/juce_core@3.1.1
      * In this case it should match one entry, but there's no guarantee of
      * that!
-    */
-    Array<Module> getModulesByName (const String& moduleNameString)
-    {
-        Array<Module> results;
-        ModuleName module (moduleNameString);
+	*/
+	Array<Module> getModulesByName(const String & moduleNameString)
+	{
+		Array<Module> results;
+		ModuleName module(moduleNameString);
 
-        for (auto repoEntry : ValueTreeChildrenConnector (directory))
-        {
-            if (module.getRepo().isEmpty() || repoEntry["shortname"] == module.getRepo())
-                results.addArray (getMatchingModulesFromRepo (repoEntry, module.getName()));
-        }
+		if (module.getRepo().isNotEmpty())
+		{
+			std::cout << "searching one repo" << std::endl;
+            
+            var repoEntry;
+            if (directory.isArray())
+            {
+                for (auto repo : *directory.getArray())
+                {
+                    if (repo["shortname"] != var::null && repo["shortname"] == module.getRepo())
+                    {
+                        repoEntry = repo;
+                    }
+                }
+            }
 
-        /* If a version was provided then set it.  We won't know until download time whether it definitely exists. */
-        if (module.getVersion().isNotEmpty())
-            for (auto& a : results)
-                a.setVersion (module.getVersion());
+			if (repoEntry.isVoid())
+			{
+				std::cerr << "repo not found " << module.getRepo() << std::endl;
+				return results;
+			}
+            
+            DBG ("get matching modules from " << repoEntry["shortname"].toString() << "...");
 
-        return results;
-    }
+			results.addArray(getMatchingModulesFromRepo(repoEntry, module.getName()));
+		} 
+		else
+		{
+            if (directory.isArray())
+            {
+                for (auto repoEntry : *directory.getArray())
+                {
+                    DBG ("get matching modules from " << repoEntry["shortname"].toString() << "...");
+                    results.addArray(getMatchingModulesFromRepo(repoEntry, module.getName()));
+                }
+            }
+            else
+            {
+                std::cerr << "error - directory is not an array" << std::endl;
+            }
+		}
+
+		std::cout << "found: " << results.size() << std::endl;
+
+		/* If a version was provided then set it.  We won't know until download time whether it definitely exists. */
+		if (module.getVersion().isNotEmpty())
+			for (auto & a : results)
+				a.setVersion(module.getVersion());
+
+		return results;
+	}
 
 private:
-    Array<Module> getMatchingModulesFromRepo (ValueTree repoEntry, const String& name)
+    
+    bool matchModule (var moduleEntry, String name)
     {
-        Array<Module> result;
-
-        for (auto moduleEntry : ValueTreeChildrenConnector (repoEntry))
+        return moduleEntry["name"].toString().matchesWildcard(name, false);
+    }
+    
+    Module createModuleFromEntry(var repoEntry, var moduleEntry)
+    {
+        auto test = [&repoEntry](const String & text)
         {
-            if (moduleEntry["name"].toString().matchesWildcard (name, false))
+            if (text.isEmpty())
+                std::cerr << "warning: error in directory for repo " << repoEntry["shortname"].toString() << std::endl;
+            return text;
+        };
+        
+        Module m;
+        
+        m.setRepo(test(repoEntry["shortname"]));
+        m.setPath(test(repoEntry["path"]));
+        m.setSource(test(repoEntry["source"]));
+        m.setName(test(moduleEntry["name"]));
+        m.setSubPath(test(moduleEntry["subpath"]));
+        
+        /* Description is allowed to be empty. */
+        m.setDescription(moduleEntry["description"]);
+        
+        return m;
+    }
+    
+	Array<Module> getMatchingModulesFromRepo(var repoEntry, const String & name)
+	{
+		Array<Module> result;
+
+        if (repoEntry["module"].isArray())
+        {
+            for (auto moduleEntry : *repoEntry["module"].getArray())
             {
-                /* We use this short lambda for validating the mandatory fields
-                 * in the directory. */
-                auto test = [&repoEntry] (const String & text)
-                {
-                    if (text.isEmpty())
-                        printWarning("warning: error in directory for repo " + repoEntry["shortname"].toString());
-
-                    return text;
-                };
-
-                Module m;
-
-                m.setRepo (test (repoEntry["shortname"]));
-                m.setPath (test (repoEntry["path"]));
-                m.setSource (test (repoEntry["source"]));
-                m.setName (test (moduleEntry["name"]));
-                m.setSubPath (test (moduleEntry["subpath"]));
-
-                /* Description is allowed to be empty. */
-                m.setDescription (moduleEntry["description"]);
-
-                result.add (m);
+                if (matchModule (moduleEntry, name))
+                    result.add (createModuleFromEntry (repoEntry, moduleEntry));
             }
         }
-
-        return result;
-    }
-    ValueTree directory;
+        else
+        {
+            var moduleEntry = repoEntry["module"];
+            if (matchModule (moduleEntry, name))
+                result.add (createModuleFromEntry (repoEntry, moduleEntry));
+            
+        }
+		return result;
+	}
+    
+	var directory;
 };
 
 #endif  // REPOSITORY_H_INCLUDED
