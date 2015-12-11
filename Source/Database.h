@@ -202,7 +202,7 @@ private:
     {
         auto urlRequest = url.getChildURL (endpoint);
 
-        ScopedPointer<InputStream> in (urlRequest.createInputStream (false, nullptr, nullptr, headers, 0, &responseHeaders, &status));
+        ScopedPointer<InputStream> in (urlRequest.createInputStream (false, nullptr, nullptr, generateHeader(), 0, &responseHeaders, &status));
 
         checkInputStream (in, urlRequest);
 
@@ -223,7 +223,7 @@ private:
     {
         auto urlRequest = url.getChildURL (endpoint).withPOSTData (request);
 
-        ScopedPointer<InputStream> in (urlRequest.createInputStream (true, nullptr, nullptr, headers, 0, &responseHeaders, &status));
+        ScopedPointer<InputStream> in (urlRequest.createInputStream (true, nullptr, nullptr, generateHeader(), 0, &responseHeaders, &status));
 
         checkInputStream (in, urlRequest);
 
