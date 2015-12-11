@@ -239,7 +239,6 @@ private:
 
     URL url;
     StringPairArray responseHeaders;
-    String headers;
     String queryResult;
     int status;
 };

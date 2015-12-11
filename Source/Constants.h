@@ -17,7 +17,7 @@ namespace Constants
     static const int cacheRefreshMinutes { 60 };
 
     constexpr static char versionString[] { "0.01" };
-
+    
 #if JUCE_LINUX
     constexpr static char databaseUrl[] { "http://codegarden.cloudant.com/jpm/" };
 #else
