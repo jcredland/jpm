@@ -34,7 +34,7 @@ ID (mingwLibs)
 /**
  We need to provide custom headers to github to use this beta service.
  */
-String readEntireTextStreamCustomHeaders (URL url)
+inline String readEntireTextStreamCustomHeaders (URL url)
 {
     String headers = "Accept: application/vnd.github.drax-preview+json";
     const ScopedPointer<InputStream> in (url.createInputStream (false, nullptr, nullptr, headers));

@@ -25,18 +25,63 @@ public:
     String debugInfo;
 };
 
+/**
+ * OutputRecorder buffers anything printed to the screen.  It makes
+ * automated tests easier to write. 
+ */
+class OutputRecorder
+{
+public:
+    void record(const String & s)
+    {
+        lines.add(s); 
+    }
+
+    /** Returns true if the output contained the exact string specified. */
+    bool hasLineMatching(const String & s) const
+    {
+        return lines.contains(s);
+    }
+
+    /** Returns true if the output contained the substring specified. */
+    bool hasLineContaining(const String & s) const
+    {
+        DBG("** " + lines.size()); 
+
+        for (auto l: lines)
+            if (l.contains(s))
+                return true;
+
+        return false;
+    }
+
+private:
+    StringArray lines;
+};
+
+extern ScopedPointer<OutputRecorder>  outputRecorder;
+
 inline void printHeading (const String& s)
 {
+    if (outputRecorder)
+        outputRecorder->record(s); 
+
     std::cout << "jpm ****** " << s << std::endl;
 }
 
 inline void printWarning (const String& s)
 {
+    if (outputRecorder)
+        outputRecorder->record(s); 
+
     std::cout << "jpm -    : " << s << std::endl;
 }
 
 inline void printInfo (const String& s)
 {
+    if (outputRecorder)
+        outputRecorder->record(s); 
+
     std::cout << "jpm      : " << s << std::endl;
 }
 

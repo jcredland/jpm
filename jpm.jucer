@@ -12,6 +12,8 @@
       <FILE id="HSdcxm" name="DownloadCache.h" compile="0" resource="0" file="Source/DownloadCache.h"/>
       <FILE id="GjXqK2" name="JucerFile.h" compile="0" resource="0" file="Source/JucerFile.h"/>
       <FILE id="EHqcvH" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
+      <FILE id="PkemvX" name="Main.h" compile="0" resource="0" file="Source/Main.h"/>
+      <FILE id="rg9hnA" name="Main__Tests.cpp" compile="1" resource="0" file="Source/Main__Tests.cpp"/>
       <FILE id="k2Ltte" name="Module.h" compile="0" resource="0" file="Source/Module.h"/>
       <FILE id="IbzvOp" name="ModuleGenerator.h" compile="0" resource="0"
             file="Source/ModuleGenerator.h"/>
