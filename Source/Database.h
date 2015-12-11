@@ -13,7 +13,7 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
-#define DATABASE_URL        "https://codegarden.cloudant.com/jpm/"
+#define DATABASE_URL        "http://codegarden.cloudant.com/jpm/"
 #define READ_ONLY_KEY       "romenglentiouldissionged"
 #define READ_ONLY_PASSWORD  "cbe04fcf61bd85eb946e31ce0c310adabc2986b4"
 
@@ -147,7 +147,13 @@ private:
      */
     void get (const String & endpoint)
     {
-        const ScopedPointer<InputStream> in(url.getChildURL (endpoint).createInputStream (false, nullptr, nullptr, headers, 0, &responseHeaders, &status));
+        auto urlRequest = url.getChildURL (endpoint); 
+
+        ScopedPointer<InputStream> in (urlRequest.createInputStream (false, nullptr, nullptr, headers, 0, &responseHeaders, &status));
+        
+        if (! in)
+            throw JpmFatalExcepton("could not create input stream for: " + urlRequest.toString(true),
+                    "probably a build problem on linux where https support hasn't been compiled in"); 
         
         //for (auto key : responseHeaders.getAllKeys())
         //{
@@ -164,7 +170,13 @@ private:
      */
     void post (const String & endpoint, const String & request)
     {
-        const ScopedPointer<InputStream> in(url.getChildURL (endpoint).withPOSTData (request).createInputStream (true, nullptr, nullptr, headers, 0, &responseHeaders, &status));
+        auto urlRequest = url.getChildURL (endpoint).withPOSTData (request);
+
+        ScopedPointer<InputStream> in (urlRequest.createInputStream (true, nullptr, nullptr, headers, 0, &responseHeaders, &status));
+
+        if (! in)
+            throw JpmFatalExcepton("could not create input stream for: " + urlRequest.toString(true),
+                    "probably a build problem on linux where https support hasn't been compiled in"); 
         
         //for (auto key : responseHeaders.getAllKeys())
         //{
