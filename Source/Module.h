@@ -19,18 +19,24 @@
 class ModuleName
 {
 public:
-    ModuleName(const String & name_) : name(name_) {}
-    
-    String getRepo() const { return name.contains("/") ? name.upToFirstOccurrenceOf("/", false, false) : String::empty; }
-    
-    String getVersion() const { return name.contains("@") ? name.fromLastOccurrenceOf("@", false, false) : String::empty; }
-    
+    ModuleName (const String& name_) : name (name_) {}
+
+    String getRepo() const
+    {
+        return name.contains ("/") ? name.upToFirstOccurrenceOf ("/", false, false) : String::empty;
+    }
+
+    String getVersion() const
+    {
+        return name.contains ("@") ? name.fromLastOccurrenceOf ("@", false, false) : String::empty;
+    }
+
     String getName() const
     {
-        if (name.contains("/"))
-            return name.fromFirstOccurrenceOf("/", false, false).upToLastOccurrenceOf("@", false, false);
-        
-        return name.upToLastOccurrenceOf("@", false, false);
+        if (name.contains ("/"))
+            return name.fromFirstOccurrenceOf ("/", false, false).upToLastOccurrenceOf ("@", false, false);
+
+        return name.upToLastOccurrenceOf ("@", false, false);
     }
 private:
     String name;

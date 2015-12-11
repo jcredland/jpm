@@ -68,7 +68,7 @@ public:
     ModuleGenerator() {}
 
     /**
-     * Creates a basic juce_module_info. 
+     * Creates a basic juce_module_info.
      */
     void writeJuceModuleInfo()
     {
@@ -159,9 +159,9 @@ public:
 
     void writeDoxygen()
     {
-        auto doxyfile = folder.getChildFile("Doxyfile"); 
+        auto doxyfile = folder.getChildFile ("Doxyfile");
 
-        String sources = getSubfolders().joinIntoString(" ");
+        String sources = getSubfolders().joinIntoString (" ");
 
         String doxygenContent =
             "PROJECT_NAME = " + folder.getFileName() +  "\n"
@@ -171,7 +171,7 @@ public:
             "GENERATE_HTML          = YES"              "\n"
             "HTML_OUTPUT            = ."                "\n";
 
-        doxyfile.replaceWithText(doxygenContent); 
+        doxyfile.replaceWithText (doxygenContent);
     }
 
     void run (const StringArray& commandLine)
@@ -201,7 +201,7 @@ public:
             printInfo (h);
 
         writeSources();
-        writeDoxygen(); 
+        writeDoxygen();
         writeJuceModuleInfo();
     }
 

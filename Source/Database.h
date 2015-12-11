@@ -22,78 +22,82 @@
 class Database
 {
 public:
-    
-    Database()
-    :   url (DATABASE_URL)
+
+    Database() : url (DATABASE_URL)
     {
-        headers = String("Content-Type:application/json\n" \
-                         "Authorization: Basic " + Base64::toBase64 (String(READ_ONLY_KEY) + ":" + String(READ_ONLY_PASSWORD)));
+        headers = String ("Content-Type:application/json\n"
+                          "Authorization: Basic "
+                          + Base64::toBase64 (String (READ_ONLY_KEY)
+                                              + ":"
+                                              + String (READ_ONLY_PASSWORD)));
     }
-    
-    
+
+
     /** Massage the returned data into a simpler array format
      */
-    static var parseToArray(String json)
+    static var parseToArray (String json)
     {
         var array;
-        var parsedJson = JSON::parse(json);
+        var parsedJson = JSON::parse (json);
         var rows = parsedJson["rows"];
+
         for (auto row : *rows.getArray())
         {
-            array.append(row["value"]);
+            array.append (row["value"]);
         }
+
         return array;
     }
-    
-    
+
+
     /** Get all repositories and module data as text for local storage
      */
     String getAllModulesAsJSON()
     {
         // Call predefined "all-modules" view.
-        
+
         get ("_design/module-views/_view/all-modules");
-        
+
         DBG (queryResult);
-        
+
         if (checkStatus())
             return queryResult;
         else
             return String();
     }
-    
-    String textSearch (const String & searchString)
+
+    String textSearch (const String& searchString)
     {
         String query = String ("{ \"selector\": { \"$text\": \"" + searchString + "\" } }");
         //DBG (query);
-        
+
         // Cloudant's text query facility
         post ("/_find", query);
-        
+
         checkStatus();
 
         DBG (queryResult);
-        
+
         return queryResult;
     }
-    
-    String getModulesInRepo (const String & repoNameString)
+
+    String getModulesInRepo (const String& repoNameString)
     {
-        
+
         // Build query string to find module or module set based on shortname
         String query = String ("{ \"selector\": { \"shortname\": \"" + repoNameString + "\" } }");
         //DBG (query);
-        
+
         // Cloudant's text query facility
         post ("/_find", query);
-        
+
         checkStatus();
-        
+
         DBG (queryResult);
-        
+
         return queryResult;
     }
-    
+
     /** Get modules matching a given name.
      *  This calls a pre-defined 'view' which is a javascript map function defined on the database.
      *
@@ -110,34 +114,34 @@ public:
      *          }
      *      }
      */
-    String getModulesByName (const String & moduleNameString)
+    String getModulesByName (const String& moduleNameString)
     {
         // Call predefined "module-name" view.
-        
+
         get ("_design/module-views/_view/module-name?key=%22" + moduleNameString + "%22");
-        
+
         checkStatus();
 
         return queryResult;
     }
-    
-    URL &getURL()
+
+    const URL& getURL() const
     {
         return url;
     }
-
 private:
-    
+
     /** Check for error status, print message and return false if error status found
      */
     bool checkStatus()
     {
         if (status < 200 || status > 300)
         {
-            std::cerr << "fatal: returned status " << status << ":" << std::endl;
-            std::cerr << queryResult;
+            printError("fatal: database returned status " + String(status) + ":");
+            printError(queryResult);
             return false;
         }
+
         return true;
     }
 
@@ -145,16 +149,16 @@ private:
      create a GET HTTP request to an endpoint based on the stored URL
      and store the result
      */
-    void get (const String & endpoint)
+    void get (const String& endpoint)
     {
-        auto urlRequest = url.getChildURL (endpoint); 
+        auto urlRequest = url.getChildURL (endpoint);
 
         ScopedPointer<InputStream> in (urlRequest.createInputStream (false, nullptr, nullptr, headers, 0, &responseHeaders, &status));
-        
+
         if (! in)
-            throw JpmFatalExcepton("could not create input stream for: " + urlRequest.toString(true),
-                    "probably a build problem on linux where https support hasn't been compiled in"); 
-        
+            throw JpmFatalExcepton ("could not create input stream for: " + urlRequest.toString (true),
+                                    "probably a build problem on linux where https support hasn't been compiled in");
+
         //for (auto key : responseHeaders.getAllKeys())
         //{
         //    DBG (key << ": " << responseHeaders.getValue(key, "n/a"));
@@ -163,36 +167,35 @@ private:
 
         queryResult = in->readEntireStreamAsString();
     }
-    
+
     /**
      create a POST HTTP request to an endpoint based on the stored URL
      and store the result
      */
-    void post (const String & endpoint, const String & request)
+    void post (const String& endpoint, const String& request)
     {
         auto urlRequest = url.getChildURL (endpoint).withPOSTData (request);
 
         ScopedPointer<InputStream> in (urlRequest.createInputStream (true, nullptr, nullptr, headers, 0, &responseHeaders, &status));
 
         if (! in)
-            throw JpmFatalExcepton("could not create input stream for: " + urlRequest.toString(true),
-                    "probably a build problem on linux where https support hasn't been compiled in"); 
-        
+            throw JpmFatalExcepton ("could not create input stream for: " + urlRequest.toString (true),
+                                    "probably a build problem on linux where https support hasn't been compiled in");
+
         //for (auto key : responseHeaders.getAllKeys())
         //{
         //    DBG (key << ": " << responseHeaders.getValue(key, "n/a"));
         //}
         //DBG (status);
-        
+
         queryResult = in->readEntireStreamAsString();
     }
-    
+
     URL url;
     StringPairArray responseHeaders;
     String headers;
     String queryResult;
     int status;
-    
 };
 
 

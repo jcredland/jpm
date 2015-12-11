@@ -6,6 +6,7 @@
   <MAINGROUP id="lKnX28" name="jpm">
     <GROUP id="{B94692A7-5AFA-84B6-3ED4-855A7936E9F0}" name="Source">
       <FILE id="LtFqOC" name="ConfigFile.h" compile="0" resource="0" file="Source/ConfigFile.h"/>
+      <FILE id="ARd05J" name="Constants.h" compile="0" resource="0" file="Source/Constants.h"/>
       <FILE id="i2wYjr" name="Database.h" compile="0" resource="0" file="Source/Database.h"/>
       <FILE id="YYUaVX" name="Directory.h" compile="0" resource="0" file="Source/Directory.h"/>
       <FILE id="HSdcxm" name="DownloadCache.h" compile="0" resource="0" file="Source/DownloadCache.h"/>
@@ -30,10 +31,10 @@
                        isDebug="0" optimisation="3" targetName="jpm"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
-        <MODULEPATH id="juce_core" path="..\..\juce\modules"/>
-        <MODULEPATH id="juce_events" path="..\..\juce\modules"/>
-        <MODULEPATH id="juce_data_structures" path="..\..\juce\modules"/>
-        <MODULEPATH id="juce_cryptography" path="..\..\juce\modules"/>
+        <MODULEPATH id="juce_core" path=".\juce\modules"/>
+        <MODULEPATH id="juce_events" path=".\juce\modules"/>
+        <MODULEPATH id="juce_data_structures" path=".\juce\modules"/>
+        <MODULEPATH id="juce_cryptography" path=".\juce\modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
     <VS2015 targetFolder="Builds/VisualStudio2015">
@@ -44,12 +45,26 @@
                        isDebug="0" optimisation="3" targetName="jpm"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
-        <MODULEPATH id="juce_events" path="..\..\juce\modules"/>
-        <MODULEPATH id="juce_data_structures" path="..\..\juce\modules"/>
-        <MODULEPATH id="juce_cryptography" path="..\..\juce\modules"/>
-        <MODULEPATH id="juce_core" path="..\..\juce\modules"/>
+        <MODULEPATH id="juce_events" path=".\juce\modules"/>
+        <MODULEPATH id="juce_data_structures" path=".\juce\modules"/>
+        <MODULEPATH id="juce_cryptography" path=".\juce\modules"/>
+        <MODULEPATH id="juce_core" path=".\juce\modules"/>
       </MODULEPATHS>
     </VS2015>
+    <LINUX_MAKE targetFolder="Builds/LinuxMakefile">
+      <CONFIGURATIONS>
+        <CONFIGURATION name="Debug" libraryPath="/usr/X11R6/lib/" isDebug="1" optimisation="1"
+                       targetName="jpm"/>
+        <CONFIGURATION name="Release" libraryPath="/usr/X11R6/lib/" isDebug="0" optimisation="3"
+                       targetName="jpm"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_events" path=".\juce\modules"/>
+        <MODULEPATH id="juce_data_structures" path=".\juce\modules"/>
+        <MODULEPATH id="juce_cryptography" path=".\juce\modules"/>
+        <MODULEPATH id="juce_core" path=".\juce\modules"/>
+      </MODULEPATHS>
+    </LINUX_MAKE>
   </EXPORTFORMATS>
   <MODULES>
     <MODULE id="juce_core" showAllCode="1" useLocalCopy="0"/>
