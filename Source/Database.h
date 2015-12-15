@@ -15,8 +15,6 @@
 #include "Constants.h"
 #include "sha1.h"
 
-enum class AuthType { readOnly, readWrite };
-
 /** Class for accessing and querying the jpm Cloudant database
 */
 class Database
@@ -28,21 +26,20 @@ public:
 
     /** Generate HTTP header 
      */
-    String generateHeader (AuthType authType = AuthType::readOnly)
+    String generateHeader ()
     {
         return String ("Content-Type:application/json\n"
-                          "Authorization: Basic " + getAuthToken(authType));
-
+                          "Authorization: Basic " + getAuthToken());
     }
 
     /** Generate token for authorisation header
      */
-    String getAuthToken(AuthType authType) const
+    String getAuthToken() const
     {
         String s; 
-        s += authType == AuthType::readOnly ? Constants::databaseKeyReadOnly : Constants::databaseKeyReadWrite;
+        s += Constants::databaseKeyReadOnly;
         s += ":";
-        s += authType == AuthType::readOnly ? Constants::databasePasswordReadOnly : Constants::databasePasswordReadWrite;
+        s += Constants::databasePasswordReadOnly;
 
         return Base64::toBase64 (s); 
     }

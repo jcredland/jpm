@@ -25,8 +25,6 @@ namespace Constants
 #endif
     constexpr static char databaseKeyReadOnly[] { "romenglentiouldissionged" };
     constexpr static char databasePasswordReadOnly[] { "cbe04fcf61bd85eb946e31ce0c310adabc2986b4" };
-    constexpr static char databaseKeyReadWrite[] { "roushenedereirfaidntorth" };
-    constexpr static char databasePasswordReadWrite[] { "0d0ce14753692bd8e71bf090c04534f74f18e287" };
 };
 
 
