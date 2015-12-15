@@ -47,7 +47,7 @@ public:
         var parsedJson = JSON::parse (json);
         var rows = parsedJson["rows"];
         
-        if (rows == var::null)
+        if (rows.isVoid())
         {
             throw JpmFatalExcepton ("no rows found in data",
                                     "Check cached data file for debugging which should contain any returned data");
@@ -63,7 +63,7 @@ public:
             }
             else
             {
-                if (key == var::null)
+                if (key.isVoid())
                     printError ("no value or key found for row");
                 else
                     printError ("no value found for key " + row["key"].toString());
