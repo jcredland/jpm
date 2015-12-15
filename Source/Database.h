@@ -86,7 +86,7 @@ public:
     {
         // Call predefined "all-modules" view.
 
-        get ("_design/module-views/_view/all-modules");
+        get ("registry/_design/module-views/_view/all-modules");
 
         DBG (queryResult);
 
@@ -108,7 +108,7 @@ public:
         //DBG (query);
 
         // Cloudant's text query facility
-        post ("/_find", query);
+        post ("registry//_find", query);
 
         checkStatus();
 
@@ -127,7 +127,7 @@ public:
         //DBG (query);
 
         // Cloudant's text query facility
-        post ("/_find", query);
+        post ("registry//_find", query);
 
         checkStatus();
 
@@ -156,8 +156,29 @@ public:
     {
         // Call predefined "module-name" view.
 
-        get ("_design/module-views/_view/module-name?key=%22" + moduleNameString + "%22");
+        get ("registry/_design/module-views/_view/module-name?key=%22" + moduleNameString + "%22");
 
+        checkStatus();
+
+        return queryResult;
+    }
+    
+    String addUser (const String& username, const String& password)
+    {
+        String salt = generateSalt();
+        String id = "org.couchdb.user:" + username;
+        String json;
+        json += "{\n";
+        //json += "  \"_id\": \"org.couchdb.user:" + username + "\",";
+        json += "  \"type\": \"user\",";
+        json += "  \"name\": \"" + username + "\",";
+        json += "  \"roles\": [\"publisher\"],";
+        json += "  \"password_sha\": \"" + stringToSHA1 (password + salt) + "\",";
+        json += "  \"salt\": \"" + salt + "\"";
+        json += "}";
+        
+        put ("_users/" + id, json);
+        
         checkStatus();
 
         return queryResult;
@@ -193,12 +214,12 @@ private:
     
     /** Generate the SHA1 hash of a string 
      */
-    String generatePasswordHash (String password)
+    String stringToSHA1 (String s)
     {
         unsigned char hash[20];
         char hexString[41];
         
-        sha1::calc(password.toRawUTF8(), password.length(), hash);
+        sha1::calc(s.toRawUTF8(), s.length(), hash);
         sha1::toHexString(hash, hexString);
         
         DBG ("generated password hash: " << hexString);
@@ -270,6 +291,26 @@ private:
         queryResult = in->readEntireStreamAsString();
     }
     
+    /**
+     create a PUT HTTP request to an endpoint based on the stored URL
+     and store the result
+     */
+    void put (const String& endpoint, const String& request)
+    {
+        auto urlRequest = url.getChildURL (endpoint).withPOSTData (request);
+
+        ScopedPointer<InputStream> in (urlRequest.createInputStream (true, nullptr, nullptr, generateHeader(), 0, &responseHeaders, &status, 5, "PUT"));
+
+        checkInputStream (in, urlRequest);
+
+        //for (auto key : responseHeaders.getAllKeys())
+        //{
+        //    DBG (key << ": " << responseHeaders.getValue(key, "n/a"));
+        //}
+        //DBG (status);
+
+        queryResult = in->readEntireStreamAsString();
+    }
 
     URL url;
     StringPairArray responseHeaders;

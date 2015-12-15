@@ -19,12 +19,14 @@ namespace Constants
     constexpr static char versionString[] { "0.01" };
     
 #if JUCE_LINUX
-    constexpr static char databaseUrl[] { "http://codegarden.cloudant.com/jpm/" };
+    constexpr static char databaseUrl[] { "http://juce.cloudant.com/" };
 #else
-    constexpr static char databaseUrl[] { "https://codegarden.cloudant.com/jpm/" };
+    constexpr static char databaseUrl[] { "https://juce.cloudant.com/" };
 #endif
-    constexpr static char databaseKeyReadOnly[] { "romenglentiouldissionged" };
-    constexpr static char databasePasswordReadOnly[] { "cbe04fcf61bd85eb946e31ce0c310adabc2986b4" };
+    constexpr static char registry[] { "registry" };
+    constexpr static char users[] { "_users" };
+    constexpr static char databaseKeyReadOnly[] { "illikedwerstochemortooth" };
+    constexpr static char databasePasswordReadOnly[] { "17b7e80852bb3837ce1187734e5f88debef1848e" };
 };
 
 

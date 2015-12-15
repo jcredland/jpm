@@ -11,7 +11,15 @@ public:
     {
         listCommand();
         generateSalt();
-        generatePasswordHash();
+        stringToSHA1();
+        addUser();
+    }
+    
+    void addUser()
+    {
+        Database database;
+        String result = database.addUser("testUser", "password");
+        DBG (result);
     }
     
     void generateSalt()
@@ -31,14 +39,14 @@ public:
         expect (saltArray[1].compare (saltArray[2]) != 0);
     }
     
-    void generatePasswordHash()
+    void stringToSHA1()
     {
         Database database;
-        beginTest ("generatePasswordHash should generate a valid SHA1 hash from a given string");
+        beginTest ("stringToSHA1 should generate a valid SHA1 hash from a given string");
         String password("somePassword1");
         String validSHA1Hash("eaced31083513e4c54a396176e95480d6d77e9cd");
         
-        expect (database.generatePasswordHash (password).compare (validSHA1Hash) == 0);
+        expect (database.stringToSHA1 (password).compare (validSHA1Hash) == 0);
     }
     
     void listCommand()
