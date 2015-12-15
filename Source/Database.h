@@ -13,6 +13,7 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "Constants.h"
+#include "sha1.h"
 
 enum class AuthType { readOnly, readWrite };
 
@@ -169,8 +170,44 @@ public:
     {
         return url;
     }
+    
+    
+    
 private:
+    
+    friend class Main__Tests; // This is just so we can call private functions from the tests.
 
+    /** Generate salt for password. Returns a 32 character random hexadecimal string.
+     */
+    String generateSalt()
+    {
+        const char charset[] = "0123456789abcdef";
+        Random random;
+        String salt;
+        for (int i = 0; i < 32; i++)
+        {
+            salt += charset[random.nextInt(16)];
+        }
+        
+        DBG ("generated salt: " << salt);
+        return salt;
+        
+    }
+    
+    /** Generate the SHA1 hash of a string 
+     */
+    String generatePasswordHash (String password)
+    {
+        unsigned char hash[20];
+        char hexString[41];
+        
+        sha1::calc(password.toRawUTF8(), password.length(), hash);
+        sha1::toHexString(hash, hexString);
+        
+        DBG ("generated password hash: " << hexString);
+        return String(hexString);
+    }
+    
     /** Check for error status, print message and return false if error status found
      */
     bool checkStatus()

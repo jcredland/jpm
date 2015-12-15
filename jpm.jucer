@@ -17,6 +17,8 @@
       <FILE id="k2Ltte" name="Module.h" compile="0" resource="0" file="Source/Module.h"/>
       <FILE id="IbzvOp" name="ModuleGenerator.h" compile="0" resource="0"
             file="Source/ModuleGenerator.h"/>
+      <FILE id="e7TnRY" name="sha1.cpp" compile="1" resource="0" file="Source/sha1.cpp"/>
+      <FILE id="rJq9Kc" name="sha1.h" compile="0" resource="0" file="Source/sha1.h"/>
       <FILE id="hyZ4yU" name="Source_GitHub.h" compile="0" resource="0" file="Source/Source_GitHub.h"/>
       <FILE id="DYIcUc" name="Source_Local.h" compile="0" resource="0" file="Source/Source_Local.h"/>
       <FILE id="YcDxND" name="Utilities.h" compile="0" resource="0" file="Source/Utilities.h"/>
