@@ -47,6 +47,8 @@ public:
             install();
         else if (command == "genmodule")
             genmodule();
+        else if (command == "adduser")
+            adduser();
         else if (command == "rebuildjucer")
             rebuildjucer();
         else if (command == "erasecache")
@@ -197,6 +199,24 @@ private:
         generator.run (commandLine);
     }
 
+    void adduser()
+    {
+        using namespace std;
+        string username, password, email;
+        
+        cout << "Please enter a username: ";
+        cin >> username;
+        cout << "Please enter a password: ";
+        cin >> password;
+        cout << "Please enter your email: ";
+        cin >> email;
+        
+        Database db;
+        db.addUser (username, password, email);
+        
+        cout << "Successfully added " << username << " to database\n";
+    }
+    
     void list()
     {
         Directory directory;

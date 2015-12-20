@@ -162,7 +162,7 @@ public:
         return response.bodyAsString;
     }
     
-    String addUser (const String& username, const String& password)
+    String addUser (const String& username, const String& password, const String& email)
     {
         String salt = generateSalt();
         String id = "org.couchdb.user:" + username;
@@ -170,6 +170,7 @@ public:
         adamski::RestRequest::Response response = request.put ("_users/" + id)
         .field ("type", "user")
         .field ("name", username)
+        .field ("email", email)
         .field ("roles", Array<var>({var("publisher")}))
         .field ("password_sha", stringToSHA1 (password + salt))
         .field ("salt", salt)
@@ -239,7 +240,7 @@ private:
     {
         if (res.status < 200 || res.status > 300)
         {
-            printError("fatal: database returned status " + String(res.status) + ":");
+            printError("database returned status " + String(res.status) + ":");
             printError(res.bodyAsString);
             return false;
         }

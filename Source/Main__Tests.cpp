@@ -23,7 +23,7 @@ public:
     void addUser()
     {
         Database database;
-        String result = database.addUser("testUser", "password");
+        String result = database.addUser("testUser", "password", "test@testuser.com");
         DBG (result);
     }
     
