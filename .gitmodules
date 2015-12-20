@@ -1,3 +1,9 @@
 [submodule "juce"]
 	path = juce
 	url = http://www.github.com/julianstorer/JUCE
+[submodule "modules/smallsha1"]
+	path = modules/smallsha1
+	url = git@github.com:adamski/smallsha1.git
+[submodule "modules/rest_request"]
+	path = modules/rest_request
+	url = git@github.com:adamski/RestRequest.git
