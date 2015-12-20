@@ -17,8 +17,6 @@
       <FILE id="k2Ltte" name="Module.h" compile="0" resource="0" file="Source/Module.h"/>
       <FILE id="IbzvOp" name="ModuleGenerator.h" compile="0" resource="0"
             file="Source/ModuleGenerator.h"/>
-      <FILE id="e7TnRY" name="sha1.cpp" compile="1" resource="0" file="Source/sha1.cpp"/>
-      <FILE id="rJq9Kc" name="sha1.h" compile="0" resource="0" file="Source/sha1.h"/>
       <FILE id="hyZ4yU" name="Source_GitHub.h" compile="0" resource="0" file="Source/Source_GitHub.h"/>
       <FILE id="DYIcUc" name="Source_Local.h" compile="0" resource="0" file="Source/Source_Local.h"/>
       <FILE id="YcDxND" name="Utilities.h" compile="0" resource="0" file="Source/Utilities.h"/>
@@ -39,6 +37,8 @@
         <MODULEPATH id="juce_events" path="../../JUCE/modules"/>
         <MODULEPATH id="juce_data_structures" path="../../JUCE/modules"/>
         <MODULEPATH id="juce_cryptography" path="../../JUCE/modules"/>
+        <MODULEPATH id="rest_request" path="modules"/>
+        <MODULEPATH id="smallsha1" path="modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
     <VS2015 targetFolder="Builds/VisualStudio2015">
@@ -53,6 +53,8 @@
         <MODULEPATH id="juce_data_structures" path=".\juce\modules"/>
         <MODULEPATH id="juce_cryptography" path=".\juce\modules"/>
         <MODULEPATH id="juce_core" path=".\juce\modules"/>
+        <MODULEPATH id="rest_request" path="modules"/>
+        <MODULEPATH id="smallsha1" path="modules"/>
       </MODULEPATHS>
     </VS2015>
     <LINUX_MAKE targetFolder="Builds/LinuxMakefile">
@@ -67,6 +69,8 @@
         <MODULEPATH id="juce_data_structures" path=".\juce\modules"/>
         <MODULEPATH id="juce_cryptography" path=".\juce\modules"/>
         <MODULEPATH id="juce_core" path=".\juce\modules"/>
+        <MODULEPATH id="rest_request" path="modules"/>
+        <MODULEPATH id="smallsha1" path="modules"/>
       </MODULEPATHS>
     </LINUX_MAKE>
   </EXPORTFORMATS>
@@ -75,6 +79,8 @@
     <MODULE id="juce_cryptography" showAllCode="1" useLocalCopy="0"/>
     <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0"/>
     <MODULE id="juce_events" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="rest_request" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="smallsha1" showAllCode="1" useLocalCopy="0"/>
   </MODULES>
   <JUCEOPTIONS/>
   <LIVE_SETTINGS>

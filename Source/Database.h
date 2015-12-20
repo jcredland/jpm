@@ -13,7 +13,7 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "Constants.h"
-#include "sha1.h"
+
 
 /** Class for accessing and querying the jpm Cloudant database
 */
@@ -21,15 +21,10 @@ class Database
 {
 public:
 
-    Database() : url (Constants::databaseUrl)
-    {}
-
-    /** Generate HTTP header 
-     */
-    String generateHeader ()
+    Database() : request (Constants::databaseUrl)
     {
-        return String ("Content-Type:application/json\n"
-                          "Authorization: Basic " + getAuthToken());
+        request.header ("Content-Type", "application/json");
+        request.header ("Authorization", "Basic " + getAuthToken());
     }
 
     /** Generate token for authorisation header
@@ -86,12 +81,18 @@ public:
     {
         // Call predefined "all-modules" view.
 
-        get ("registry/_design/module-views/_view/all-modules");
+        adamski::RestRequest::Response response = request.get ("registry/_design/module-views/_view/all-modules").execute();
 
-        DBG (queryResult);
+        DBG (response.bodyAsString);
+        DBG (response.result.getErrorMessage());
+        
+        for (auto key : response.headers.getAllKeys())
+        {
+            DBG (key << ": " << response.headers.getValue(key, "n/a"));
+        }
 
-        if (checkStatus())
-            return queryResult;
+        if (checkStatus(response))
+            return response.bodyAsString;
         else
             return String();
     }
@@ -104,17 +105,17 @@ public:
      */
     String textSearch (const String& searchString)
     {
-        String query = String ("{ \"selector\": { \"$text\": \"" + searchString + "\" } }");
-        //DBG (query);
-
         // Cloudant's text query facility
-        post ("registry//_find", query);
 
-        checkStatus();
+        adamski::RestRequest::Response response = request.post ("registry/_find")
+        .field ("selector", propertyAsVar("$text", searchString))
+        .execute();
 
-        DBG (queryResult);
+        checkStatus(response);
 
-        return queryResult;
+        DBG (response.bodyAsString);
+
+        return response.bodyAsString;
     }
 
     /** Get all modules in a repository
@@ -122,18 +123,16 @@ public:
     String getModulesInRepo (const String& repoNameString)
     {
 
-        // Build query string to find module or module set based on shortname
-        String query = String ("{ \"selector\": { \"shortname\": \"" + repoNameString + "\" } }");
-        //DBG (query);
-
         // Cloudant's text query facility
-        post ("registry//_find", query);
+        adamski::RestRequest::Response response = request.post ("registry/_find")
+        .field ("selector", propertyAsVar("shortname", repoNameString))
+        .execute();
 
-        checkStatus();
+        checkStatus(response);
 
-        DBG (queryResult);
+        DBG (response.bodyAsString);
 
-        return queryResult;
+        return response.bodyAsString;
     }
 
     /** Get modules matching a given name.
@@ -156,38 +155,46 @@ public:
     {
         // Call predefined "module-name" view.
 
-        get ("registry/_design/module-views/_view/module-name?key=%22" + moduleNameString + "%22");
+        adamski::RestRequest::Response response = request.get ("registry/_design/module-views/_view/module-name?key=%22" + moduleNameString + "%22").execute();
 
-        checkStatus();
+        checkStatus(response);
 
-        return queryResult;
+        return response.bodyAsString;
     }
     
     String addUser (const String& username, const String& password)
     {
         String salt = generateSalt();
         String id = "org.couchdb.user:" + username;
-        String json;
-        json += "{\n";
-        //json += "  \"_id\": \"org.couchdb.user:" + username + "\",";
-        json += "  \"type\": \"user\",";
-        json += "  \"name\": \"" + username + "\",";
-        json += "  \"roles\": [\"publisher\"],";
-        json += "  \"password_sha\": \"" + stringToSHA1 (password + salt) + "\",";
-        json += "  \"salt\": \"" + salt + "\"";
-        json += "}";
         
-        put ("_users/" + id, json);
+        adamski::RestRequest::Response response = request.put ("_users/" + id)
+        .field ("type", "user")
+        .field ("name", username)
+        .field ("roles", Array<var>({var("publisher")}))
+        .field ("password_sha", stringToSHA1 (password + salt))
+        .field ("salt", salt)
+        .execute();
         
-        checkStatus();
+        DBG (request.getBodyAsString());
+        
+        checkStatus(response);
 
-        return queryResult;
+        return response.bodyAsString;
+    }
+    
+    /**
+     * TODO: Create 'CouchUser' class, so we can store current revision etc and pass in object
+     */
+    String deleteUser (const String& username, const String& revision)
+    {
+        
     }
 
     const URL& getURL() const
     {
-        return url;
+        return request.getURL();
     }
+    
     
     
     
@@ -219,8 +226,8 @@ private:
         unsigned char hash[20];
         char hexString[41];
         
-        sha1::calc(s.toRawUTF8(), s.length(), hash);
-        sha1::toHexString(hash, hexString);
+        adamski::sha1::calc(s.toRawUTF8(), s.length(), hash);
+        adamski::sha1::toHexString(hash, hexString);
         
         DBG ("generated password hash: " << hexString);
         return String(hexString);
@@ -228,12 +235,12 @@ private:
     
     /** Check for error status, print message and return false if error status found
      */
-    bool checkStatus()
+    bool checkStatus(adamski::RestRequest::Response res)
     {
-        if (status < 200 || status > 300)
+        if (res.status < 200 || res.status > 300)
         {
-            printError("fatal: database returned status " + String(status) + ":");
-            printError(queryResult);
+            printError("fatal: database returned status " + String(res.status) + ":");
+            printError(res.bodyAsString);
             return false;
         }
 
@@ -248,74 +255,26 @@ private:
             throw JpmFatalExcepton ("could not create input stream for: " + urlRequest.toString (true),
                                     "probably a build problem on linux where https support hasn't been compiled in");
     }
-
-    /**
-     create a GET HTTP request to an endpoint based on the stored URL
-     and store the result
-     */
-    void get (const String& endpoint)
-    {
-        auto urlRequest = url.getChildURL (endpoint);
-
-        ScopedPointer<InputStream> in (urlRequest.createInputStream (false, nullptr, nullptr, generateHeader(), 0, &responseHeaders, &status));
-
-        checkInputStream (in, urlRequest);
-
-        //for (auto key : responseHeaders.getAllKeys())
-        //{
-        //    DBG (key << ": " << responseHeaders.getValue(key, "n/a"));
-        //}
-        //DBG (status);
-
-        queryResult = in->readEntireStreamAsString();
-    }
-
-    /**
-     create a POST HTTP request to an endpoint based on the stored URL
-     and store the result
-     */
-    void post (const String& endpoint, const String& request)
-    {
-        auto urlRequest = url.getChildURL (endpoint).withPOSTData (request);
-
-        ScopedPointer<InputStream> in (urlRequest.createInputStream (true, nullptr, nullptr, generateHeader(), 0, &responseHeaders, &status));
-
-        checkInputStream (in, urlRequest);
-
-        //for (auto key : responseHeaders.getAllKeys())
-        //{
-        //    DBG (key << ": " << responseHeaders.getValue(key, "n/a"));
-        //}
-        //DBG (status);
-
-        queryResult = in->readEntireStreamAsString();
-    }
     
-    /**
-     create a PUT HTTP request to an endpoint based on the stored URL
-     and store the result
+    
+    /** Crazy function to simplify adding properties with / to vars
      */
-    void put (const String& endpoint, const String& request)
+    var propertyAsVar(const String& name, const String &value, var varToAddTo = var())
     {
-        auto urlRequest = url.getChildURL (endpoint).withPOSTData (request);
-
-        ScopedPointer<InputStream> in (urlRequest.createInputStream (true, nullptr, nullptr, generateHeader(), 0, &responseHeaders, &status, 5, "PUT"));
-
-        checkInputStream (in, urlRequest);
-
-        //for (auto key : responseHeaders.getAllKeys())
-        //{
-        //    DBG (key << ": " << responseHeaders.getValue(key, "n/a"));
-        //}
-        //DBG (status);
-
-        queryResult = in->readEntireStreamAsString();
+        DynamicObject* obj = nullptr;
+        if (varToAddTo.isVoid())
+           obj  = new DynamicObject();
+        else
+           obj = varToAddTo.getDynamicObject();
+            
+        NamedValueSet& properties = obj->getProperties();
+        properties.set (name, value);
+        return var(obj);
     }
 
-    URL url;
-    StringPairArray responseHeaders;
-    String queryResult;
-    int status;
+    adamski::RestRequest request;
+
+
 };
 
 

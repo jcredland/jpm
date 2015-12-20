@@ -13,6 +13,11 @@ public:
         generateSalt();
         stringToSHA1();
         addUser();
+        
+        StringPairArray testPairs;
+        testPairs.set("testKey", "testValue");
+        testPairs.set("testKey2", "testValue2");
+        DBG (testPairs.getDescription());
     }
     
     void addUser()

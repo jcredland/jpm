@@ -119,6 +119,8 @@ public:
             Array<var> browse;
             Array<File> directories;
             folder.findChildFiles (directories, File::findDirectories, true, "*");
+            
+            // TODO: exclude .git files
 
             for (auto f : directories)
                 browse.add (f.getRelativePathFrom (folder) + "/*");
