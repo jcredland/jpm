@@ -12,19 +12,17 @@ public:
         listCommand();
         generateSalt();
         stringToSHA1();
-        addUser();
-        
-        StringPairArray testPairs;
-        testPairs.set("testKey", "testValue");
-        testPairs.set("testKey2", "testValue2");
-        DBG (testPairs.getDescription());
+        //addUser();
     }
     
     void addUser()
     {
-        Database database;
-        String result = database.addUser("testUser", "password", "test@testuser.com");
-        DBG (result);
+        // Add and delete a user
+        //Database database;
+        //String result = database.addUser("testUser", "password", "test@testuser.com");
+        // Delete user
+        
+        // Call ConfigFile.saveUser and check file exists
     }
     
     void generateSalt()

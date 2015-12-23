@@ -11,34 +11,64 @@
 #ifndef USERCONFIG_H_INCLUDED
 #define USERCONFIG_H_INCLUDED
 
+#include "Utilities.h"
 
 /**
- * Stores downloaded files in a temporary loction and reuses those temporary
- * files when a download is requested.
+ * Manages user details and
 */
 class UserConfig
 {
 public:
     UserConfig()
     {
-        location = File::getSpecialLocation (File::userApplicationDataDirectory)
+        configFile = File::getSpecialLocation (File::userApplicationDataDirectory)
             .getChildFile ("jpm.config.json");
 
-        location.createDirectory();
+        configFile.createDirectory();
         
-        if (location.exists())
+        DBG (configFile.getFullPathName());
+        
+        if (configFile.existsAsFile())
         {
             // Load data
-            String json = location.readEntireTextStream();
-            properties = JSON::parse (json);
+            String json = configFile.loadFileAsString();
+            properties = JSON::parse (json); // Should probably do some error checking here
         }
     }
     
+    void saveUser(const String& username, const String& password, const String& email)
+    {
+        DynamicObject* obj;
+        if (!properties.isVoid() && properties.isObject())
+        {
+            obj = properties.getDynamicObject();
+        }
+        else
+        {
+            obj = new DynamicObject();
+        }
+        obj->setProperty("username", username);
+        obj->setProperty("password",  password);
+        obj->setProperty("email", email);
+        
+        properties = var (obj);
+        
+        saveAllProperties();
+    }
     
+    void saveAllProperties()
+    {
+        String json = JSON::toString (properties);
+        configFile.replaceWithText (json);
+    }
     
+    NamedValueSet getProperties()
+    {
+        return properties.getDynamicObject()->getProperties();
+    }
     
 private:
-    File location;
+    File configFile;
     var properties;
 
 };

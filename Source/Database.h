@@ -13,7 +13,7 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "Constants.h"
-
+#include "UserConfig.h"
 
 /** Class for accessing and querying the jpm Cloudant database
 */
@@ -21,20 +21,32 @@ class Database
 {
 public:
 
-    Database() : request (Constants::databaseUrl)
+    Database(const String& username, const String& password) :
+    request (Constants::databaseUrl),
+    username (username),
+    password (password)
     {
         request.header ("Content-Type", "application/json");
-        request.header ("Authorization", "Basic " + getAuthToken());
+        request.header ("Authorization", "Basic " + getAuthToken(username, password));
+    }
+    
+    Database() :
+    request (Constants::databaseUrl),
+    username (Constants::databaseKeyReadOnly),
+    password (Constants::databasePasswordReadOnly)
+    {
+        request.header ("Content-Type", "application/json");
+        request.header ("Authorization", "Basic " + getAuthToken(username, password));
     }
 
     /** Generate token for authorisation header
      */
-    String getAuthToken() const
+    String getAuthToken(String username, String password) const
     {
         String s; 
-        s += Constants::databaseKeyReadOnly;
+        s += username;
         s += ":";
-        s += Constants::databasePasswordReadOnly;
+        s += password;
 
         return Base64::toBase64 (s); 
     }
@@ -164,6 +176,9 @@ public:
     
     String addUser (const String& username, const String& password, const String& email)
     {
+        DBG ("username: " << this->username);
+        DBG ("password: " << this->password);
+        
         String salt = generateSalt();
         String id = "org.couchdb.user:" + username;
         
@@ -178,7 +193,7 @@ public:
         
         DBG (request.getBodyAsString());
         
-        checkStatus(response);
+        checkStatus(response, true);
 
         return response.bodyAsString;
     }
@@ -189,6 +204,37 @@ public:
     String deleteUser (const String& username, const String& revision)
     {
         
+    }
+    
+    String publish (var moduleInfo)
+    {
+        UserConfig userConfig;
+        String id = moduleInfo["id"];
+        
+        // Set up maintainers object
+        DynamicObject* obj = new DynamicObject;
+        obj->setProperty("name", userConfig.getProperties()["username"]);
+        obj->setProperty("email", userConfig.getProperties()["email"]);
+
+        var maintainer = var(obj);
+        Array<var> maintainers;
+        maintainers.add (maintainer);
+        
+        adamski::RestRequest::Response response = request.put ("registry/" + id)
+        .field ("name", moduleInfo["name"])
+        .field ("version", moduleInfo["version"])
+        .field ("description", moduleInfo["description"])
+        .field ("version", moduleInfo["version"])
+        .field ("website", moduleInfo["website"])
+        .field ("dependencies", moduleInfo["dependencies"])
+        .field ("maintainers", maintainers)
+        .execute();
+        
+        DBG (request.getBodyAsString());
+        
+        checkStatus(response);
+        
+        return response.bodyAsString;
     }
 
     const URL& getURL() const
@@ -236,12 +282,20 @@ private:
     
     /** Check for error status, print message and return false if error status found
      */
-    bool checkStatus(adamski::RestRequest::Response res)
+    bool checkStatus(adamski::RestRequest::Response res, bool fatal = false)
     {
         if (res.status < 200 || res.status > 300)
         {
-            printError("database returned status " + String(res.status) + ":");
-            printError(res.bodyAsString);
+            String errorString = "database returned status " + String(res.status);
+            if (fatal)
+            {
+                JpmFatalExcepton (errorString, res.bodyAsString);
+            }
+            else
+            {
+                printError (errorString);
+                printError (res.bodyAsString);
+            }
             return false;
         }
 
@@ -258,22 +312,24 @@ private:
     }
     
     
-    /** Crazy function to simplify adding properties with / to vars
+    /** Function to simplify adding properties with / to vars
      */
     var propertyAsVar(const String& name, const String &value, var varToAddTo = var())
     {
         DynamicObject* obj = nullptr;
         if (varToAddTo.isVoid())
-           obj  = new DynamicObject();
+           obj = new DynamicObject();
         else
            obj = varToAddTo.getDynamicObject();
             
         NamedValueSet& properties = obj->getProperties();
         properties.set (name, value);
-        return var(obj);
+        return var (obj);
     }
-
+    
     adamski::RestRequest request;
+    String username;
+    String password;
 
 
 };

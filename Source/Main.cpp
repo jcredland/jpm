@@ -32,6 +32,7 @@ void usage()
     std::cout << "OTHER COMMANDS" << std::endl;
     std::cout << "jpm genmodule <name>      create a module template [ beta ]" << std::endl;
     std::cout << "jpm adduser               create a user" << std::endl;
+    std::cout << "jpm publish               publish module from current working directory" << std::endl;
     std::cout << "jpm rebuildjucer          rewrite the modules section of the jucer file" << std::endl;
     std::cout << std::endl;
     std::cout << "Run this from the root of your JUCE project" << std::endl;

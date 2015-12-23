@@ -7,6 +7,7 @@
 #include "Directory.h"
 #include "Database.h"
 #include "ConfigFile.h"
+#include "UserConfig.h"
 #include "Constants.h"
 
 /**
@@ -49,6 +50,8 @@ public:
             genmodule();
         else if (command == "adduser")
             adduser();
+        else if (command == "publish")
+            publish();
         else if (command == "rebuildjucer")
             rebuildjucer();
         else if (command == "erasecache")
@@ -215,6 +218,37 @@ private:
         db.addUser (username, password, email);
         
         cout << "Successfully added " << username << " to database\n";
+        
+        UserConfig userConfig;
+        userConfig.saveUser (username, password, email);
+        
+    }
+    
+    void publish()
+    {
+        File cwd = File::getCurrentWorkingDirectory();
+        File moduleInfoFile = cwd.getChildFile ("juce_module_info");
+        if (!moduleInfoFile.existsAsFile())
+        {
+            moduleInfoFile = cwd.getChildFile ("juce_module_info.json");
+            if (!moduleInfoFile.existsAsFile())
+            {
+                JpmFatalExcepton("Can't find module info file in current directory", cwd.getFullPathName());
+            }
+        }
+        var moduleInfo;
+        Result result = JSON::parse (moduleInfoFile.loadFileAsString(),  moduleInfo);
+        
+        if (result.wasOk())
+        {
+            UserConfig userConfig;
+            Database db (userConfig.getProperties()["username"], userConfig.getProperties()["password"]);
+            db.publish (moduleInfo);
+        }
+        else
+        {
+            JpmFatalExcepton ("error parsing module info file", result.getErrorMessage());
+        }
     }
     
     void list()
