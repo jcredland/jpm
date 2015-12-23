@@ -61,7 +61,7 @@ public:
         else if (command == "compress")
         {
             Database db;
-            db.compressModuleFolder(File::getCurrentWorkingDirectory().getChildFile (commandLine[0]),
+            ZipFileUtilities::compressFolder(File::getCurrentWorkingDirectory().getChildFile (commandLine[0]),
                                     File::getCurrentWorkingDirectory().getChildFile (commandLine[1]));
         }
         else
