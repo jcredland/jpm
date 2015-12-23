@@ -19,6 +19,7 @@
             file="Source/ModuleGenerator.h"/>
       <FILE id="hyZ4yU" name="Source_GitHub.h" compile="0" resource="0" file="Source/Source_GitHub.h"/>
       <FILE id="DYIcUc" name="Source_Local.h" compile="0" resource="0" file="Source/Source_Local.h"/>
+      <FILE id="s47G2p" name="UserConfig.h" compile="0" resource="0" file="Source/UserConfig.h"/>
       <FILE id="YcDxND" name="Utilities.h" compile="0" resource="0" file="Source/Utilities.h"/>
       <FILE id="YMOVr5" name="ValueTreeArray.h" compile="0" resource="0"
             file="Source/ValueTreeArray.h"/>

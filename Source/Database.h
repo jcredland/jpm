@@ -197,6 +197,9 @@ public:
         
         checkStatus(response, true);
         
+        // If successful create/update config file: (create and overwrite for now)
+        //
+
         return response.bodyAsString;
     }
     
@@ -213,7 +216,7 @@ public:
     {
         UserConfig userConfig;
         String id = moduleInfo["id"];
-        
+    
         // Set up maintainers object
         DynamicObject* obj = new DynamicObject;
         obj->setProperty("name", userConfig.getProperties()["username"]);

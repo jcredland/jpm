@@ -58,7 +58,7 @@ public:
             erasecache();
         else if (command == "add")
             add();
-        else if (command == "compress")
+        else if (command == "compress") // test for folder compression method
         {
             Database db;
             ZipFileUtilities::compressFolder(File::getCurrentWorkingDirectory().getChildFile (commandLine[0]),
