@@ -29,7 +29,7 @@ public:
         request.header ("Content-Type", "application/json");
         request.header ("Authorization", "Basic " + getAuthToken(username, password));
     }
-    
+
     Database() :
     request (Constants::databaseUrl),
     username (Constants::databaseKeyReadOnly),
@@ -174,6 +174,8 @@ public:
         return response.bodyAsString;
     }
     
+    /** Add a user to the database. This is required in order to publish modules on the system.
+     */
     String addUser (const String& username, const String& password, const String& email)
     {
         DBG ("username: " << this->username);
@@ -194,12 +196,13 @@ public:
         DBG (request.getBodyAsString());
         
         checkStatus(response, true);
-
+        
         return response.bodyAsString;
     }
     
+    
     /**
-     * TODO: Create 'CouchUser' class, so we can store current revision etc and pass in object
+     * TODO: Create 'CouchUser' class, so we can store current revision etc and pass in object to update/delete
      */
     String deleteUser (const String& username, const String& revision)
     {
@@ -295,7 +298,7 @@ private:
             else
             {
                 printError (errorString);
-                printError (res.bodyAsString);
+            printError(res.bodyAsString);
             }
             return false;
         }
@@ -319,15 +322,15 @@ private:
     {
         DynamicObject* obj = nullptr;
         if (varToAddTo.isVoid())
-           obj = new DynamicObject();
+           obj  = new DynamicObject();
         else
            obj = varToAddTo.getDynamicObject();
             
         NamedValueSet& properties = obj->getProperties();
         properties.set (name, value);
-        return var (obj);
+        return var(obj);
     }
-    
+
     adamski::RestRequest request;
     String username;
     String password;

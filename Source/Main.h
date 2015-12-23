@@ -58,6 +58,12 @@ public:
             erasecache();
         else if (command == "add")
             add();
+        else if (command == "compress")
+        {
+            Database db;
+            db.compressModuleFolder(File::getCurrentWorkingDirectory().getChildFile (commandLine[0]),
+                                    File::getCurrentWorkingDirectory().getChildFile (commandLine[1]));
+        }
         else
             printError ("command not found");
     }

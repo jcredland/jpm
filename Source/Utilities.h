@@ -135,4 +135,32 @@ private:
     ValueTree tree;
 };
 
+class ZipFileUtilities
+{
+public:
+    /** Compress file folder and save as a zip file.
+     */
+    static void compressFolder (const File& path, File outputZip)
+    {
+        ZipFile::Builder zipBuilder;
+        Array<File> tempFiles;
+        path.findChildFiles(tempFiles, File::findFiles, true, "*");
+        
+        //add files
+        for (int i = 0; i < tempFiles.size(); i++)
+        {
+            zipBuilder.addFile(tempFiles[i], 9, tempFiles[i].getRelativePathFrom(outputZip));
+        }
+        
+        //save our zip file
+        double *progress = nullptr;
+        if (outputZip.exists())
+        {
+            outputZip.deleteFile();
+        }
+        FileOutputStream os (outputZip);
+        zipBuilder.writeToStream(os, progress);
+    }
+};
+
 #endif  // UTILITIES_H_INCLUDED

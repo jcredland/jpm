@@ -64,6 +64,7 @@ public:
         config.addChild (child, -1, nullptr);
     }
 
+
     /** Returns the config as a string - this is for debugging. */
     String toString() const
     {
