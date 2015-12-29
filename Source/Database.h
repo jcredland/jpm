@@ -226,6 +226,21 @@ public:
         Array<var> maintainers;
         maintainers.add (maintainer);
         
+        // Get zipped source files
+        MemoryOutputStream os;
+        ZipFileUtilities::compressFolderToStream(File ("."), os);
+        String zippedData = os.toString();
+
+        // add as attachment to put request
+        DynamicObject* attachmentData = new DynamicObject;
+        attachmentData->setProperty ("content-type", "text/plain");
+        attachmentData->setProperty( "data", Base64::toBase64 (zippedData));
+        
+        DynamicObject* attachmentObj = new DynamicObject;
+        
+        obj->setProperty(id + ".zip", var(attachmentData));
+        var _attachments = var(attachmentObj);
+        
         adamski::RestRequest::Response response = request.put ("registry/" + id)
         .field ("name", moduleInfo["name"])
         .field ("version", moduleInfo["version"])
@@ -235,6 +250,7 @@ public:
         .field ("repository", moduleInfo["repository"])
         .field ("dependencies", moduleInfo["dependencies"])
         .field ("maintainers", maintainers)
+        .field ("_attachments", _attachments)
         .execute();
         
         DBG (request.getBodyAsString());

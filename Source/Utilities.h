@@ -140,7 +140,7 @@ class ZipFileUtilities
 public:
     /** Compress file folder and save as a zip file.
      */
-    static void compressFolder (const File& path, File outputZip)
+    static void compressFolderToStream (const File& path, OutputStream& outputStream)
     {
         ZipFile::Builder zipBuilder;
         Array<File> tempFiles;
@@ -149,17 +149,26 @@ public:
         //add files
         for (int i = 0; i < tempFiles.size(); i++)
         {
-            zipBuilder.addFile(tempFiles[i], 9, tempFiles[i].getRelativePathFrom(outputZip));
+            zipBuilder.addFile(tempFiles[i], 9, tempFiles[i].getRelativePathFrom(path));
         }
         
-        //save our zip file
         double *progress = nullptr;
+        zipBuilder.writeToStream(outputStream, progress);
+    }
+    
+    static void compressFolder (const File& path, File outputZip)
+    {
+
+        
+        //save our zip file
+
         if (outputZip.exists())
         {
             outputZip.deleteFile();
         }
         FileOutputStream os (outputZip);
-        zipBuilder.writeToStream(os, progress);
+
+        compressFolderToStream (path, os);
     }
 };
 
