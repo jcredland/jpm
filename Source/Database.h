@@ -226,6 +226,7 @@ public:
         .field ("description", moduleInfo["description"])
         .field ("version", moduleInfo["version"])
         .field ("website", moduleInfo["website"])
+        .field ("repository", moduleInfo["repository"])
         .field ("dependencies", moduleInfo["dependencies"])
         .field ("maintainers", maintainers)
         .execute();
