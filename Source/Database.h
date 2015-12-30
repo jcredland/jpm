@@ -130,48 +130,17 @@ public:
         return response.bodyAsString;
     }
 
-    /** Get all modules in a repository
+    /** Get module matching a given id.
      */
-    String getModulesInRepo (const String& repoNameString)
-    {
-
-        // Cloudant's text query facility
-        adamski::RestRequest::Response response = request.post ("registry/_find")
-        .field ("selector", propertyAsVar("shortname", repoNameString))
-        .execute();
-
-        checkStatus(response);
-
-        DBG (response.bodyAsString);
-
-        return response.bodyAsString;
-    }
-
-    /** Get modules matching a given name.
-     *  This calls a pre-defined 'view' which is a javascript map function defined on the database.
-     *
-     *  For reference the map function, as of the last update to this file:
-     *      function (doc) {
-     *          if (doc.module) {
-     *              if (Array.isArray(doc.module)) {
-     *                  doc.module.forEach (function (module) {
-     *                      emit (module.name, {repo: {shortname: doc.shortname, path: doc.path, source: doc.source}, module: module});
-     *                  });
-     *              } else {
-     *                  emit (doc.module.name, {repo: {shortname: doc.shortname, path: doc.path, source: doc.source}, module: doc.module});
-     *              }
-     *          }
-     *      }
-     */
-    String getModulesByName (const String& moduleNameString)
+    var getModuleById (const String& moduleId)
     {
         // Call predefined "module-name" view.
 
-        adamski::RestRequest::Response response = request.get ("registry/_design/module-views/_view/module-name?key=%22" + moduleNameString + "%22").execute();
+        adamski::RestRequest::Response response = request.get ("registry/" + moduleId).execute();
 
         checkStatus(response);
 
-        return response.bodyAsString;
+        return response.body;
     }
     
     /** Add a user to the database. This is required in order to publish modules on the system.
@@ -231,13 +200,12 @@ public:
         ZipFileUtilities::compressFolderToStream(File ("."), os);
         String zippedData = os.toString();
 
-        // add as attachment to put request
+        // Add as attachment to put request
         DynamicObject* attachmentData = new DynamicObject;
         attachmentData->setProperty ("content-type", "text/plain");
         attachmentData->setProperty( "data", Base64::toBase64 (zippedData));
         
         DynamicObject* attachmentObj = new DynamicObject;
-        
         obj->setProperty(id + ".zip", var(attachmentData));
         var _attachments = var(attachmentObj);
         
@@ -317,7 +285,7 @@ private:
             else
             {
                 printError (errorString);
-            printError(res.bodyAsString);
+                printError(res.bodyAsString);
             }
             return false;
         }

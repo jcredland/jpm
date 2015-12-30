@@ -108,7 +108,36 @@ private:
 
         rebuildjucer();
     }
+    
+    
 
+    /** Add a modules to the jpmfile.xml and install it. */
+    void installModule (const String& moduleName)
+    {
+        Database db;
+        
+        var data = db.getModuleById (moduleName);
+
+        printHeading ("installing: " + data["name"].toString() + "@" + data["version"].toString());
+        
+        // install module: base64 decode _attachments and unzip to folder..
+        
+        Identifier moduleZipId (moduleName + ".zip");
+        MemoryBlock zipData;
+        zipData.fromBase64Encoding (data["_attachments"][moduleZipId]["data"].toString());
+        // Not sure if above line will work..
+        MemoryInputStream is(zipData, false);
+        
+        ZipFile zipFile(is);
+        zipFile.uncompressTo (File::getCurrentWorkingDirectory().getChildFile ("jpm_modules"));
+        
+        Module module;
+        module.setName (moduleName);
+        // TODO etc...
+        config.addModule (module);
+
+        rebuildjucer();
+    }
 
     /**
      * Add a module that's already on the users local drive. 
