@@ -225,7 +225,7 @@ private:
         {
             while (commandLine.size() > 0)
             {
-                addModuleFromDirectory (commandLine[0]);
+                installModule (commandLine[0]);
                 commandLine.remove (0);
             }
         }
@@ -262,6 +262,7 @@ private:
     void publish()
     {
         File cwd = File::getCurrentWorkingDirectory();
+        DBG ("got cwd");
         File moduleInfoFile = cwd.getChildFile ("juce_module_info");
         if (!moduleInfoFile.existsAsFile())
         {
@@ -271,6 +272,7 @@ private:
                 JpmFatalExcepton("Can't find module info file in current directory", cwd.getFullPathName());
             }
         }
+        DBG ("got juce_module_info");
         var moduleInfo;
         Result result = JSON::parse (moduleInfoFile.loadFileAsString(),  moduleInfo);
         

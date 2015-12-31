@@ -149,17 +149,20 @@ public:
         //add files
         for (int i = 0; i < tempFiles.size(); i++)
         {
+            if (tempFiles[i].getFileName().startsWith(".") || tempFiles[i].getRelativePathFrom(path).startsWith("."))
+                continue; // ignore dotfiles and hidden folders
+            
+            DBG ("adding file " << tempFiles[i].getFullPathName());
             zipBuilder.addFile(tempFiles[i], 9, tempFiles[i].getRelativePathFrom(path));
         }
         
         double *progress = nullptr;
-        zipBuilder.writeToStream(outputStream, progress);
+        bool result = zipBuilder.writeToStream(outputStream, progress);
     }
     
     static void compressFolder (const File& path, File outputZip)
     {
 
-        
         //save our zip file
 
         if (outputZip.exists())

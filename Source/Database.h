@@ -26,8 +26,8 @@ public:
     username (username),
     password (password)
     {
-        request.header ("Content-Type", "application/json");
         request.header ("Authorization", "Basic " + getAuthToken(username, password));
+        request.header ("Content-Type", "application/json");
     }
 
     Database() :
@@ -35,8 +35,8 @@ public:
     username (Constants::databaseKeyReadOnly),
     password (Constants::databasePasswordReadOnly)
     {
-        request.header ("Content-Type", "application/json");
         request.header ("Authorization", "Basic " + getAuthToken(username, password));
+        request.header ("Content-Type", "application/json");
     }
 
     /** Generate token for authorisation header
@@ -120,6 +120,7 @@ public:
         // Cloudant's text query facility
 
         adamski::RestRequest::Response response = request.post ("registry/_find")
+
         .field ("selector", propertyAsVar("$text", searchString))
         .execute();
 
@@ -187,27 +188,40 @@ public:
         String id = moduleInfo["id"];
     
         // Set up maintainers object
-        DynamicObject* obj = new DynamicObject;
-        obj->setProperty("name", userConfig.getProperties()["username"]);
-        obj->setProperty("email", userConfig.getProperties()["email"]);
+        DynamicObject* maintainerObj = new DynamicObject;
+        maintainerObj->setProperty("name", userConfig.getProperties()["username"]);
+        maintainerObj->setProperty("email", userConfig.getProperties()["email"]);
 
-        var maintainer = var(obj);
+        var maintainer = var(maintainerObj);
         Array<var> maintainers;
         maintainers.add (maintainer);
         
         // Get zipped source files
-        MemoryOutputStream os;
-        ZipFileUtilities::compressFolderToStream(File ("."), os);
-        String zippedData = os.toString();
+        MemoryBlock memBlock (256, true);
+        MemoryOutputStream os (memBlock, false);
+        ZipFileUtilities::compressFolderToStream (File::getCurrentWorkingDirectory(), os);
+        String encodedData = memBlock.toBase64Encoding();
+        DBG (encodedData);
+        DBG (String(os.getDataSize()));
 
         // Add as attachment to put request
         DynamicObject* attachmentData = new DynamicObject;
         attachmentData->setProperty ("content-type", "text/plain");
-        attachmentData->setProperty( "data", Base64::toBase64 (zippedData));
+        attachmentData->setProperty( "data", encodedData);
         
         DynamicObject* attachmentObj = new DynamicObject;
-        obj->setProperty(id + ".zip", var(attachmentData));
-        var _attachments = var(attachmentObj);
+        attachmentObj->setProperty(id + ".zip", var(attachmentData));
+        var attachments = var(attachmentObj);
+        
+        // First check if this document exists
+        
+        adamski::RestRequest::Response headResponse = request.head ("registry/" + id).execute();
+        if (checkStatus (headResponse))
+        {
+            // Document exists, set revision from head response
+            String rev = headResponse.headers.getValue("Etag", ""); // this works for HEAD request only
+            request.field ("_rev", rev.removeCharacters("\""));
+        }
         
         adamski::RestRequest::Response response = request.put ("registry/" + id)
         .field ("name", moduleInfo["name"])
@@ -218,11 +232,12 @@ public:
         .field ("repository", moduleInfo["repository"])
         .field ("dependencies", moduleInfo["dependencies"])
         .field ("maintainers", maintainers)
-        .field ("_attachments", _attachments)
+        .field ("_attachments", attachments)
         .execute();
         
         DBG (request.getBodyAsString());
         
+        DBG (response.bodyAsString);
         checkStatus(response);
         
         return response.bodyAsString;
@@ -271,7 +286,8 @@ private:
         return String(hexString);
     }
     
-    /** Check for error status, print message and return false if error status found
+    /** Check for error status, print message and return false if error status found.
+     * If fatal is set to true it will fail with an exception on an unsuccesful request
      */
     bool checkStatus(adamski::RestRequest::Response res, bool fatal = false)
     {
