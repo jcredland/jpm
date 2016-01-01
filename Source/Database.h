@@ -206,7 +206,7 @@ public:
 
         // Add as attachment to put request
         DynamicObject* attachmentData = new DynamicObject;
-        attachmentData->setProperty ("content-type", "text/plain");
+        attachmentData->setProperty ("content_type", "application/zip");
         attachmentData->setProperty( "data", encodedData);
         
         DynamicObject* attachmentObj = new DynamicObject;
@@ -232,13 +232,27 @@ public:
         .field ("repository", moduleInfo["repository"])
         .field ("dependencies", moduleInfo["dependencies"])
         .field ("maintainers", maintainers)
-        .field ("_attachments", attachments)
+        //.field ("_attachments", attachments)
         .execute();
         
         DBG (request.getBodyAsString());
         
+        checkStatus(response, true);
         DBG (response.bodyAsString);
-        checkStatus(response);
+        
+        // send attachment as PUT request
+        adamski::RestRequest attachmentRequest(request.getURL());
+        attachmentRequest.header ("Content-Type", "application/zip");
+        attachmentRequest.header ("Authorization", "Basic " + getAuthToken(username, password));
+        attachmentRequest.getURL().withPOSTData (memBlock);
+        
+        DBG (response.body["rev"].toString());
+        
+        adamski::RestRequest::Response attachmentResponse = request.put ("registry/" + id + "/" + id + ".zip?rev=" + response.body["rev"].toString().removeCharacters("\""))
+        .execute();
+        
+        checkStatus(attachmentResponse, true);
+        DBG (attachmentResponse.bodyAsString);
         
         return response.bodyAsString;
     }
