@@ -210,14 +210,14 @@ public:
         MemoryOutputStream os (memBlock, false);
         ZipFileUtilities::compressFolderToStream (File::getCurrentWorkingDirectory(), os);
     
-        // START DEBUG
-        File outputZip (File::getCurrentWorkingDirectory().getChildFile (id + ".zip"));
-        outputZip.replaceWithData(os.getData(), os.getDataSize());
-        
-        MemoryInputStream zipIS (os.getData(), os.getDataSize(), false);
-        ZipFile testZip (zipIS);
-        DBG ("Zipped data - number of entries: " << testZip.getNumEntries());
-        // END DEBUG
+//        // START DEBUG
+//        File outputZip (File::getCurrentWorkingDirectory().getChildFile (id + ".zip"));
+//        outputZip.replaceWithData(os.getData(), os.getDataSize());
+//        
+//        MemoryInputStream zipIS (os.getData(), os.getDataSize(), false);
+//        ZipFile testZip (zipIS);
+//        DBG ("Zipped data - number of entries: " << testZip.getNumEntries());
+//        // END DEBUG
         
 //        String encodedData = memBlock.toBase64Encoding();
 //        DBG (encodedData);
