@@ -118,18 +118,18 @@ private:
     
 
     /** Add a modules to the jpmfile.xml and install it. */
-    void installModule (const String& moduleName)
+    void installModule (const String& moduleId)
     {
         Database db;
         
-        var data = db.getModuleById (moduleName);
+        var data = db.getModuleById (moduleId);
 
         printHeading ("installing: " + data["name"].toString() + "@" + data["version"].toString());
         
         // install module: base64 decode _attachments and unzip to folder..
         
-        Identifier moduleZipId (moduleName + ".zip");
-        MemoryBlock zipData = db.getZippedSource (moduleName);
+        Identifier moduleZipId (moduleId + ".zip");
+        MemoryBlock zipData = db.getZippedSource (moduleId);
         //DEBUG
 //        String debugStr;
 //        char* dataPtr = (char*) zipData.getData();
@@ -140,30 +140,33 @@ private:
 //        DBG (debugStr);
         /////
         DBG ("zipped size: " + String (zipData.getSize()));
-//        zipData.fromBase64Encoding (data["_attachments"][moduleZipId]["data"].toString());
-        // Not sure if above line will work..
         MemoryInputStream is(zipData, false);
         
         // DEBUG
-        File outputZip (File::getCurrentWorkingDirectory().getChildFile (moduleName + ".zip"));
-        outputZip.replaceWithData(is.getData(), is.getDataSize());
-        ZipFile outputZipFile (outputZip);
-        DBG ("Zip file: " << outputZipFile.getNumEntries() << " entries");
+//        File outputZip (File::getCurrentWorkingDirectory().getChildFile (moduleId + ".zip"));
+//        outputZip.replaceWithData(is.getData(), is.getDataSize());
+//        ZipFile outputZipFile (outputZip);
+//        DBG ("Zip file: " << outputZipFile.getNumEntries() << " entries");
         
         ZipFile zipFile(is);
-        File target (File::getCurrentWorkingDirectory().getChildFile ("jpm_modules"));
+        File moduleFolder (File::getCurrentWorkingDirectory().getChildFile ("jpm_modules"));
+        moduleFolder.createDirectory();
+        
+        File target (moduleFolder.getChildFile (moduleId));
         DBG (target.getFullPathName());
         
         DBG (zipFile.getNumEntries() << " entries");
         Result result = zipFile.uncompressTo (target, true);
-        DBG ("Unzip: " << result.wasOk() << " : " << result.getErrorMessage());
         
-//        Module module;
-//        module.setName (moduleName);
-//        // TODO etc...
-//        config.addModule (module);
-//
-//        rebuildjucer();
+        Module module;
+        module.setName (moduleId);
+        module.setPath (target.getRelativePathFrom (File::getCurrentWorkingDirectory()));
+        module.setSource ("Database");
+        // TODO add repository etc...
+        config.addModule (module);
+
+        //rebuildjucer(); // this clobbered all the juce modules so:
+        addModuleToJucer (module);
     }
 
     /**
@@ -195,7 +198,7 @@ private:
     {
         openJucerFile();
 
-        if (module.getSource() == "LocalPath")
+        if (module.getSource() == "LocalPath" || module.getSource() == "Database")
             jucer->addModule (module.getName(), module.getPath());
         else
             jucer->addModule (module.getName());

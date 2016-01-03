@@ -174,6 +174,7 @@ private:
     {
         static StringArray validSources;
         validSources.add ("GitHub");
+        validSources.add ("Database");
         validSources.add ("LocalPath");
         return validSources;
     }

@@ -3,7 +3,7 @@
 
     UserConfig.h
     Created: 23 Dec 2015 7:12:07pm
-    Author:  Adam Elemental
+    Author:  Adam Wilson
 
   ==============================================================================
 */
@@ -60,6 +60,15 @@ public:
     {
         String json = JSON::toString (properties);
         configFile.replaceWithText (json);
+    }
+    
+    bool isValid()
+    {
+        if (properties["username"].isVoid() || properties["password"].isVoid())
+        {
+            return false;
+        }
+        return true;
     }
     
     NamedValueSet getProperties()

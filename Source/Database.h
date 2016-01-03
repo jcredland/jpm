@@ -182,9 +182,18 @@ public:
         
     }
     
+    /** Publish a module. Sends the contents of juce_module_info, plus other necessary data,
+     * and uploads the zipped module folder. Assumes user is in the working directory of the module. 
+     * Requires user config to have been created by `adduser` command.
+     */
     String publish (var moduleInfo)
     {
         UserConfig userConfig;
+        if (! userConfig.isValid())
+        {
+            JpmFatalExcepton ("Invalid or missing user config", "Please run adduser command");
+        }
+        
         String id = moduleInfo["id"];
     
         // Set up maintainers object
