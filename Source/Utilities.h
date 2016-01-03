@@ -140,7 +140,7 @@ class ZipFileUtilities
 public:
     /** Compress file folder and save as a zip file.
      */
-    static void compressFolderToStream (const File& path, OutputStream& outputStream)
+    static void compressFolderToStream (const File& path, OutputStream& outputStream, int compressionLevel = 9)
     {
         ZipFile::Builder zipBuilder;
         Array<File> tempFiles;
@@ -153,7 +153,7 @@ public:
                 continue; // ignore dotfiles and hidden folders
             
             DBG ("adding file " << tempFiles[i].getFullPathName());
-            zipBuilder.addFile(tempFiles[i], 9, tempFiles[i].getRelativePathFrom(path));
+            zipBuilder.addFile(tempFiles[i], compressionLevel, tempFiles[i].getRelativePathFrom(path));
         }
         
         double *progress = nullptr;

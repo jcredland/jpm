@@ -197,21 +197,33 @@ public:
         maintainers.add (maintainer);
         
         // Get zipped source files
-        MemoryBlock memBlock (256, true);
+        MemoryBlock memBlock;
         MemoryOutputStream os (memBlock, false);
         ZipFileUtilities::compressFolderToStream (File::getCurrentWorkingDirectory(), os);
-        String encodedData = memBlock.toBase64Encoding();
-        DBG (encodedData);
-        DBG (String(os.getDataSize()));
-
-        // Add as attachment to put request
-        DynamicObject* attachmentData = new DynamicObject;
-        attachmentData->setProperty ("content_type", "application/zip");
-        attachmentData->setProperty( "data", encodedData);
+    
+        // START DEBUG
+        File outputZip (File::getCurrentWorkingDirectory().getChildFile (id + ".zip"));
+        outputZip.replaceWithData(os.getData(), os.getDataSize());
         
-        DynamicObject* attachmentObj = new DynamicObject;
-        attachmentObj->setProperty(id + ".zip", var(attachmentData));
-        var attachments = var(attachmentObj);
+        MemoryInputStream zipIS (os.getData(), os.getDataSize(), false);
+        ZipFile testZip (zipIS);
+        DBG ("Zipped data - number of entries: " << testZip.getNumEntries());
+        // END DEBUG
+        
+//        String encodedData = memBlock.toBase64Encoding();
+//        DBG (encodedData);
+        int compressedSize = os.getDataSize();
+        DBG ("compressedSize: " << compressedSize);
+        
+
+//        // Add as attachment to put request
+//        DynamicObject* attachmentData = new DynamicObject;
+//        attachmentData->setProperty ("content_type", "application/zip");
+//        attachmentData->setProperty( "data", encodedData);
+//        
+//        DynamicObject* attachmentObj = new DynamicObject;
+//        attachmentObj->setProperty(id + ".zip", var(attachmentData));
+//        var attachments = var(attachmentObj);
         
         // First check if this document exists
         
@@ -232,6 +244,7 @@ public:
         .field ("repository", moduleInfo["repository"])
         .field ("dependencies", moduleInfo["dependencies"])
         .field ("maintainers", maintainers)
+        .field ("compressed-size", compressedSize)
         //.field ("_attachments", attachments)
         .execute();
         
@@ -243,18 +256,47 @@ public:
         // send attachment as PUT request
         adamski::RestRequest attachmentRequest(request.getURL());
         attachmentRequest.header ("Content-Type", "application/zip");
+        attachmentRequest.header ("Content-Length", String (compressedSize));
         attachmentRequest.header ("Authorization", "Basic " + getAuthToken(username, password));
-        attachmentRequest.getURL().withPOSTData (memBlock);
+        DBG ("attachment size " + String (memBlock.getSize()));
         
         DBG (response.body["rev"].toString());
         
-        adamski::RestRequest::Response attachmentResponse = request.put ("registry/" + id + "/" + id + ".zip?rev=" + response.body["rev"].toString().removeCharacters("\""))
+        adamski::RestRequest::Response attachmentResponse = request.put ("registry/" + id + "/" + id + ".zip?rev=" + response.body["rev"].toString())
+        .data (memBlock)
         .execute();
         
         checkStatus(attachmentResponse, true);
         DBG (attachmentResponse.bodyAsString);
         
         return response.bodyAsString;
+    }
+    
+    const int getAttachmentSize (const String& moduleId)
+    {
+        return getModuleById (moduleId)["compressed-size"].operator int();
+    }
+    
+    const MemoryBlock getZippedSource (const String& moduleId)
+    {
+        MemoryBlock memBlock (getAttachment(moduleId, moduleId+".zip"));
+        memBlock.setSize (getAttachmentSize (moduleId)); // necessary to be able to read the zip file (feels like a hack)
+        return memBlock;
+    }
+    
+    const MemoryBlock getAttachment (const String& docId, const String& attachmentId)
+    {
+        request.removeHeader ("Content-Type");
+        request.header ("Content-Type", "application/zip");
+        adamski::RestRequest::Response attachmentResponse = request.get ("registry/" + docId + "/" + attachmentId)
+        .execute();
+        DBG ("request headers: " + request.getHeadersAsString());
+        DBG ("request body: " + request.getBodyAsString());
+        DBG ("bytes recieved: " + String (attachmentResponse.data.getSize()));
+        DBG ("response headers: " + String (attachmentResponse.getHeadersAsString()));
+        DBG ("response body: " + String (attachmentResponse.bodyAsString));
+        
+        return attachmentResponse.data;
     }
 
     const URL& getURL() const

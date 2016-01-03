@@ -58,11 +58,17 @@ public:
             erasecache();
         else if (command == "add")
             add();
-        else if (command == "compress") // test for folder compression method
+        else if (command == "zip") // test for folder compression method
         {
             Database db;
             ZipFileUtilities::compressFolder(File::getCurrentWorkingDirectory().getChildFile (commandLine[0]),
                                     File::getCurrentWorkingDirectory().getChildFile (commandLine[1]));
+        }
+        else if (command == "zipentries")
+        {
+            ZipFile zipFile (File::getCurrentWorkingDirectory().getChildFile (commandLine[0]));
+            DBG ("Unzip: " << zipFile.getNumEntries() << " entries");
+            
         }
         else
             printError ("command not found");
@@ -123,20 +129,41 @@ private:
         // install module: base64 decode _attachments and unzip to folder..
         
         Identifier moduleZipId (moduleName + ".zip");
-        MemoryBlock zipData;
-        zipData.fromBase64Encoding (data["_attachments"][moduleZipId]["data"].toString());
+        MemoryBlock zipData = db.getZippedSource (moduleName);
+        //DEBUG
+//        String debugStr;
+//        char* dataPtr = (char*) zipData.getData();
+//        for (int i=0; i<zipData.getSize(); i++)
+//        {
+//            debugStr += dataPtr[i];
+//        }
+//        DBG (debugStr);
+        /////
+        DBG ("zipped size: " + String (zipData.getSize()));
+//        zipData.fromBase64Encoding (data["_attachments"][moduleZipId]["data"].toString());
         // Not sure if above line will work..
         MemoryInputStream is(zipData, false);
         
-        ZipFile zipFile(is);
-        zipFile.uncompressTo (File::getCurrentWorkingDirectory().getChildFile ("jpm_modules"));
+        // DEBUG
+        File outputZip (File::getCurrentWorkingDirectory().getChildFile (moduleName + ".zip"));
+        outputZip.replaceWithData(is.getData(), is.getDataSize());
+        ZipFile outputZipFile (outputZip);
+        DBG ("Zip file: " << outputZipFile.getNumEntries() << " entries");
         
-        Module module;
-        module.setName (moduleName);
-        // TODO etc...
-        config.addModule (module);
-
-        rebuildjucer();
+        ZipFile zipFile(is);
+        File target (File::getCurrentWorkingDirectory().getChildFile ("jpm_modules"));
+        DBG (target.getFullPathName());
+        
+        DBG (zipFile.getNumEntries() << " entries");
+        Result result = zipFile.uncompressTo (target, true);
+        DBG ("Unzip: " << result.wasOk() << " : " << result.getErrorMessage());
+        
+//        Module module;
+//        module.setName (moduleName);
+//        // TODO etc...
+//        config.addModule (module);
+//
+//        rebuildjucer();
     }
 
     /**
