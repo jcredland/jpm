@@ -225,7 +225,7 @@ public:
         DBG ("compressedSize: " << compressedSize);
         
 
-//        // Add as attachment to put request
+//        // Add as attachment to put request -- this method does not work, unknown reason
 //        DynamicObject* attachmentData = new DynamicObject;
 //        attachmentData->setProperty ("content_type", "application/zip");
 //        attachmentData->setProperty( "data", encodedData);
@@ -286,10 +286,14 @@ public:
         return getModuleById (moduleId)["compressed-size"].operator int();
     }
     
-    const MemoryBlock getZippedSource (const String& moduleId)
+    const MemoryBlock getZippedSource (const String& moduleId, var data = var::null)
     {
+        int compressedSize;
+        if (data.isVoid()) compressedSize = getAttachmentSize (moduleId);
+        else compressedSize = data["compressed-size"];
+        
         MemoryBlock memBlock (getAttachment(moduleId, moduleId+".zip"));
-        memBlock.setSize (getAttachmentSize (moduleId)); // necessary to be able to read the zip file (feels like a hack)
+        memBlock.setSize (compressedSize); // necessary to be able to read the zip file (feels like a hack)
         return memBlock;
     }
     

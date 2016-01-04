@@ -129,7 +129,7 @@ private:
         // install module: base64 decode _attachments and unzip to folder..
         
         Identifier moduleZipId (moduleId + ".zip");
-        MemoryBlock zipData = db.getZippedSource (moduleId);
+        MemoryBlock zipData = db.getZippedSource (moduleId, data);
         //DEBUG
 //        String debugStr;
 //        char* dataPtr = (char*) zipData.getData();
@@ -320,6 +320,7 @@ private:
     
     void list()
     {
+        // This function to be adapted for new per-module structure.
         Directory directory;
         String searchString;
 
