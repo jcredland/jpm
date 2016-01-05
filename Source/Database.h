@@ -135,8 +135,6 @@ public:
      */
     var getModuleById (const String& moduleId)
     {
-        // Call predefined "module-name" view.
-
         adamski::RestRequest::Response response = request.get ("registry/" + moduleId).execute();
 
         checkStatus(response);
@@ -166,9 +164,6 @@ public:
         DBG (request.getBodyAsString());
         
         checkStatus(response, true);
-        
-        // If successful create/update config file: (create and overwrite for now)
-        //
 
         return response.bodyAsString;
     }
@@ -281,11 +276,13 @@ public:
         return response.bodyAsString;
     }
     
+    /** Get size of compressed attachment. Used by the install method to determine size of zip data */
     const int getAttachmentSize (const String& moduleId)
     {
         return getModuleById (moduleId)["compressed-size"].operator int();
     }
     
+    /** Get the zipped source code */
     const MemoryBlock getZippedSource (const String& moduleId, var data = var::null)
     {
         int compressedSize;
@@ -297,6 +294,7 @@ public:
         return memBlock;
     }
     
+    /** Get attachment from Cloudant db */
     const MemoryBlock getAttachment (const String& docId, const String& attachmentId)
     {
         request.removeHeader ("Content-Type");
